@@ -1,6 +1,6 @@
 ﻿namespace OnlineAssessmentTool.Repositories
 {
-    public class IUserRepository
+    public class UserRepository
     {
     }
 }
