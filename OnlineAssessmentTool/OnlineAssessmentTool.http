@@ -1,0 +1,6 @@
+@OnlineAssessmentTool_HostAddress = http://localhost:5118
+
+GET {{OnlineAssessmentTool_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
