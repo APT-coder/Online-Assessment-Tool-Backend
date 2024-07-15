@@ -8,6 +8,7 @@ namespace OnlineAssessmentTool.Models
     public class Users
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
 
         [Required]

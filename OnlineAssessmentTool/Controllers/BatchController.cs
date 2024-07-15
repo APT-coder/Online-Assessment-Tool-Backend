@@ -1,110 +1,152 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OnlineAssessmentTool.Data;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using AutoMapper;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Repository.IRepository;
+using OnlineAssessmentTool.Models.DTO;
+
 
 namespace OnlineAssessmentTool.Controllers
 {
-
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class BatchController : ControllerBase
     {
-        private readonly APIContext _context;
+        private readonly IBatchRepository _batchRepo;
+        private readonly IMapper _mapper;
 
-        public BatchController(APIContext context)
+        public BatchController(IBatchRepository batchRepo, IMapper mapper)
         {
-            _context = context;
+            _batchRepo = batchRepo;
+            _mapper = mapper;
         }
 
         // GET: api/Batch
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Batch>>> GetBatches()
+        public async Task<ActionResult<ApiResponse>> GetBatches()
         {
-            var batches = await _context.batch.ToListAsync();
-            return Ok(batches);
+            var batches = await _batchRepo.GetAllAsync();
+            var response = new ApiResponse
+            {
+                Result = _mapper.Map<IEnumerable<Batch>>(batches),
+                StatusCode = HttpStatusCode.OK
+            };
+            return Ok(response);
         }
 
         // GET: api/Batch/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Batch>> GetBatch(int id)
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ApiResponse>> GetBatch(int id)
         {
-            var batch = await _context.batch.FindAsync(id);
+            var batch = await _batchRepo.GetAsync(id);
 
             if (batch == null)
             {
-                return NotFound();
+                return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound });
             }
 
-            return batch;
+            var response = new ApiResponse
+            {
+                Result = _mapper.Map<Batch>(batch),
+                StatusCode = HttpStatusCode.OK
+            };
+            return Ok(response);
         }
 
-        // POST: api/Batch
         [HttpPost]
-        public async Task<ActionResult<Batch>> CreateBatch(Batch batch)
+        public async Task<ActionResult<ApiResponse>> CreateBatch([FromBody] CreateBatchDTO createbatchDTO)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList()
+                });
             }
 
-            _context.batch.Add(batch);
-            await _context.SaveChangesAsync();
+            var batch = new Batch
+            {
+                batchname = createbatchDTO.batchname
+            };
 
-            return CreatedAtAction(nameof(GetBatch), new { id = batch.batchid }, batch);
+            await _batchRepo.CreateAsync(batch);
+            await _batchRepo.SaveAsync();
+
+            var response = new ApiResponse
+            {
+                IsSuccess = true,
+                StatusCode = HttpStatusCode.Created,
+                Result = batch,
+                Message = { "Batch created successfully" }
+            };
+
+            return CreatedAtAction(nameof(GetBatch), new { id = batch.batchid }, response);
         }
 
-        // PUT: api/Batch/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBatch(int id, Batch batch)
+        public async Task<IActionResult> UpdateBatch(int id, [FromBody] UpdateBatchDTO batchDTO)
         {
-            if (id != batch.batchid)
+            if (id != batchDTO.BatchId)
             {
-                return BadRequest();
+                return BadRequest(new ApiResponse { StatusCode = HttpStatusCode.BadRequest, Message = { "Batch ID mismatch" } });
             }
 
-            _context.Entry(batch).State = EntityState.Modified;
+            var batch = await _batchRepo.GetAsync(id);
+            if (batch == null)
+            {
+                return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound, Message = { "Batch not found" } });
+            }
+
+            _mapper.Map(batchDTO, batch);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _batchRepo.UpdateAsync(batch);
+                await _batchRepo.SaveAsync();
+
+                var response = new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.OK,
+                    Result = batch,
+                    Message = { "Batch updated successfully" }
+                };
+
+                return Ok(response);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!BatchExists(id))
+                if (!await _batchRepo.ExistsAsync(id))
                 {
-                    return NotFound();
+                    return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound, Message = { "Batch not found during update" } });
                 }
                 else
                 {
                     throw;
                 }
             }
-
-            return NoContent();
         }
+
 
         // DELETE: api/Batch/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteBatch(int id)
         {
-            var batch = await _context.batch.FindAsync(id);
+            var batch = await _batchRepo.GetAsync(id);
             if (batch == null)
             {
-                return NotFound();
+                return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound, Message = { "Batch not found" } });
             }
 
-            _context.batch.Remove(batch);
-            await _context.SaveChangesAsync();
+            await _batchRepo.RemoveAsync(batch);
+            await _batchRepo.SaveAsync();
 
             return NoContent();
-        }
-
-        private bool BatchExists(int id)
-        {
-            return _context.batch.Any(e => e.batchid == id);
         }
     }
 }
-
-

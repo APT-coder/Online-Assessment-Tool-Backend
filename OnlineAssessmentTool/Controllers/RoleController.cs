@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository.IRepository;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace OnlineAssessmentTool.Controllers
@@ -13,110 +14,131 @@ namespace OnlineAssessmentTool.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly APIContext _context;
+        private readonly IRoleRepository _roleRepository;
 
-        public RolesController(APIContext context)
+        public RolesController(IRoleRepository roleRepository)
         {
-            _context = context;
+            _roleRepository = roleRepository;
         }
 
-        // GET: api/Roles
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Role>>> GetRoles()
+        public async Task<ActionResult<ApiResponse>> GetRoles()
         {
-            return await _context.Roles.ToListAsync();
+            try
+            {
+                var rolesWithPermissions = await _roleRepository.GetAllRolesAsync();
+
+                if (rolesWithPermissions == null || !rolesWithPermissions.Any())
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "No roles found." } });
+                }
+
+                return Ok(new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.OK, Result = rolesWithPermissions });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving roles from database." } });
+            }
         }
+
 
         // GET: api/Roles/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Role>> GetRole(int id)
+        public async Task<ActionResult<ApiResponse>> GetRole(int id)
         {
-            var role = await _context.Roles.FindAsync(id);
-
-            if (role == null)
+            try
             {
-                return NotFound();
+                var role = await _roleRepository.GetRoleAsync(id);
+                if (role == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
+                }
+
+                return Ok(new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.OK, Result = role });
             }
-            return role;
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving role from database." } });
+            }
         }
 
         [HttpPost]
-        public async Task<ActionResult<Role>> PostRoleWithPermissions(Role role)
+        public async Task<ActionResult<ApiResponse>> PostRole(CreateRoleDTO createRoleDTO)
         {
-            if (role.Permissions == null || role.Permissions.Count == 0)
+            try
             {
-                return BadRequest("Role must have at least one permission.");
+                if (createRoleDTO.Permissions == null || createRoleDTO.Permissions.Count == 0)
+                {
+                    return BadRequest(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.BadRequest, Message = new List<string> { "Role must have at least one permission." } });
+                }
+
+                var role = new Role
+                {
+                    RoleName = createRoleDTO.RoleName,
+                    Permissions = createRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList()
+                };
+
+                await _roleRepository.CreateRoleAsync(role);
+
+                return CreatedAtAction(nameof(GetRole), new { id = role.Id }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = role });
             }
-
-            // Fetch the selected permission IDs from role.Permissions
-            var permissionIds = role.Permissions.Select(p => p.Id).ToList();
-
-            // Fetch the selected permissions by their IDs
-            var selectedPermissions = await _context.Permissions
-                .Where(p => permissionIds.Contains(p.Id))
-                .ToListAsync();
-
-            role.Permissions = selectedPermissions;
-
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetRole), new { id = role.Id }, role);
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating role." } });
+            }
         }
-
-
-
 
 
         // PUT: api/Roles/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRole(int id, Role role)
+        public async Task<ActionResult<ApiResponse>> PutRole(int id, UpdateRoleDTO updateRoleDTO)
         {
-            if (id != role.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(role).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RoleExists(id))
+                var role = await _roleRepository.GetRoleAsync(id);
+                if (role == null)
                 {
-                    return NotFound();
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                role.RoleName = updateRoleDTO.RoleName;
+                role.Permissions = updateRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList();
+
+                await _roleRepository.UpdateRoleAsync(role);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating role." } });
+            }
         }
 
         // DELETE: api/Roles/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRole(int id)
+        public async Task<ActionResult<ApiResponse>> DeleteRole(int id)
         {
-            var role = await _context.Roles.FindAsync(id);
-            if (role == null)
+            try
             {
-                return NotFound();
+                var role = await _roleRepository.GetRoleAsync(id);
+                if (role == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
+                }
+
+                await _roleRepository.DeleteRoleAsync(id);
+
+                return NoContent();
             }
-
-            _context.Roles.Remove(role);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool RoleExists(int id)
-        {
-            return _context.Roles.Any(e => e.Id == id);
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting role." } });
+            }
         }
     }
 }

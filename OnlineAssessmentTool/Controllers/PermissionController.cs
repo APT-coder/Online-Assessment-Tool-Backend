@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OnlineAssessmentTool.Data;
-using OnlineAssessmentTool.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security;
+using System.Net;
 using System.Threading.Tasks;
+using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Repository.IRepository;
+using OnlineAssessmentTool.Models.DTO;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -13,99 +12,137 @@ namespace OnlineAssessmentTool.Controllers
     [Route("api/[controller]")]
     public class PermissionController : ControllerBase
     {
-        private readonly APIContext _context;
+        private readonly IPermissionsRepository _permissionRepository;
 
-        public PermissionController(APIContext context)
+        public PermissionController(IPermissionsRepository permissionRepository)
         {
-            _context = context;
+            _permissionRepository = permissionRepository;
         }
 
         // GET: api/Permission
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Permission>>> GetPermissions()
+        public async Task<ActionResult<ApiResponse>> GetAllPermissions()
         {
-            var permissions = await _context.Permissions.ToListAsync();
-            return Ok(permissions);
+            try
+            {
+                var permissions = await _permissionRepository.GetAllAsync();
+                return Ok(new ApiResponse { IsSuccess = true, Result = permissions, StatusCode = HttpStatusCode.OK });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse { IsSuccess = false, Message = new List<string> { ex.Message }, StatusCode = HttpStatusCode.InternalServerError });
+            }
         }
 
         // GET: api/Permission/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Permission>> GetPermission(int id)
+        public async Task<ActionResult<ApiResponse>> GetPermission(int id)
         {
-            var permission = await _context.Permissions.FindAsync(id);
-
-            if (permission == null)
+            try
             {
-                return NotFound();
-            }
+                var permission = await _permissionRepository.GetAsync(id);
 
-            return permission;
+                if (permission == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, Message = new List<string> { "Permission not found" }, StatusCode = HttpStatusCode.NotFound });
+                }
+
+                return Ok(new ApiResponse { IsSuccess = true, Result = permission, StatusCode = HttpStatusCode.OK });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse { IsSuccess = false, Message = new List<string> { ex.Message }, StatusCode = HttpStatusCode.InternalServerError });
+            }
         }
 
         // POST: api/Permission
         [HttpPost]
-        public async Task<ActionResult<Permission>> CreatePermission(Permission permission)
+        public async Task<ActionResult<ApiResponse>> CreatePermission(CreatePermissionDTO createPermissionDto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
+                if (!ModelState.IsValid)
+                {
+                    List<string> errors = new List<string>();
+                    foreach (var state in ModelState.Values)
+                    {
+                        foreach (var error in state.Errors)
+                        {
+                            errors.Add(error.ErrorMessage);
+                        }
+                    }
+                    return BadRequest(new ApiResponse { IsSuccess = false, Message = errors, StatusCode = HttpStatusCode.BadRequest });
+                }
+
+                var permission = new Permission
+                {
+                    PermissionName = createPermissionDto.PermissionName,
+                    Description = createPermissionDto.Description
+                };
+
+                await _permissionRepository.CreateAsync(permission);
+
+                return CreatedAtAction(nameof(GetPermission), new { id = permission.Id }, new ApiResponse { IsSuccess = true, Result = permission, StatusCode = HttpStatusCode.Created });
             }
-
-            _context.Permissions.Add(permission);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetPermission), new { id = permission.Id }, permission);
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse { IsSuccess = false, Message = new List<string> { ex.Message }, StatusCode = HttpStatusCode.InternalServerError });
+            }
         }
+
 
         // PUT: api/Permission/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePermission(int id, Permission permission)
+        public async Task<ActionResult<ApiResponse>> UpdatePermission(int id, UpdatePermissionDTO updatePermissionDto)
         {
-            if (id != permission.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(permission).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PermissionExists(id))
+                if (id != updatePermissionDto.Id)
                 {
-                    return NotFound();
+                    return BadRequest(new ApiResponse { IsSuccess = false, Message = new List<string> { "Request id does not match permission id" }, StatusCode = HttpStatusCode.BadRequest });
                 }
-                else
-                {
-                    throw;
-                }
-            }
 
-            return NoContent();
+                var existingPermission = await _permissionRepository.GetAsync(id);
+
+                if (existingPermission == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, Message = new List<string> { "Permission not found" }, StatusCode = HttpStatusCode.NotFound });
+                }
+
+                // Update the properties
+                existingPermission.PermissionName = updatePermissionDto.PermissionName;
+                existingPermission.Description = updatePermissionDto.Description;
+
+                await _permissionRepository.UpdateAsync(existingPermission);
+
+                return Ok(new ApiResponse { IsSuccess = true, Result = existingPermission, StatusCode = HttpStatusCode.OK });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse { IsSuccess = false, Message = new List<string> { ex.Message }, StatusCode = HttpStatusCode.InternalServerError });
+            }
         }
 
         // DELETE: api/Permission/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePermission(int id)
+        public async Task<ActionResult<ApiResponse>> DeletePermission(int id)
         {
-            var permission = await _context.Permissions.FindAsync(id);
-            if (permission == null)
+            try
             {
-                return NotFound();
+                var permission = await _permissionRepository.GetAsync(id);
+                if (permission == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, Message = new List<string> { "Permission not found" }, StatusCode = HttpStatusCode.NotFound });
+                }
+
+                await _permissionRepository.RemoveAsync(permission);
+
+                return Ok(new ApiResponse { IsSuccess = true, Result = null, StatusCode = HttpStatusCode.NoContent });
             }
-
-            _context.Permissions.Remove(permission);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool PermissionExists(int id)
-        {
-            return _context.Permissions.Any(e => e.Id == id);
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ApiResponse { IsSuccess = false, Message = new List<string> { ex.Message }, StatusCode = HttpStatusCode.InternalServerError });
+            }
         }
     }
 }

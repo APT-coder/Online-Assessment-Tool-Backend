@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Models;
-using System.Data;
-using System.Security;
 
 namespace OnlineAssessmentTool.Data
 {
@@ -21,7 +19,7 @@ namespace OnlineAssessmentTool.Data
         {
 
             modelBuilder.Entity<Role>()
-            .Property(r => r.Id)
+               .Property(r => r.Id)
                .UseIdentityColumn();
 
             modelBuilder.Entity<Role>()
