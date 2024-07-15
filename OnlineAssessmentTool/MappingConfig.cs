@@ -11,6 +11,9 @@ namespace OnlineAssessmentTool
             CreateMap<Batch, CreateBatchDTO>().ReverseMap();
             CreateMap<Batch, UpdateBatchDTO>().ReverseMap();
 
+            CreateMap<AssessmentDTO, Assessment>().ReverseMap();
+            CreateMap<QuestionDTO, Question>().ReverseMap();
+            CreateMap<QuestionOptionDTO, QuestionOption>().ReverseMap();
         }
     }
 }

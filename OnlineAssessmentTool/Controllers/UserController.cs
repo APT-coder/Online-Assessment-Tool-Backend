@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace OnlineAssessmentTool.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class UserController : ControllerBase
     {
         private readonly APIContext _context;

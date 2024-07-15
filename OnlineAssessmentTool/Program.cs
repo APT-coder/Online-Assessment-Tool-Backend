@@ -4,8 +4,17 @@ using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 
 // Add services to the container.
 
@@ -26,6 +35,7 @@ builder.Services.AddScoped<IBatchRepository, BatchRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
