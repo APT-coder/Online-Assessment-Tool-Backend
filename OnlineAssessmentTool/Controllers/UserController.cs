@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -19,7 +20,10 @@ namespace OnlineAssessmentTool.Controllers
     {
         private readonly APIContext _context;
         private readonly IUserRepository _userRepository;
-
+        /* private readonly ITrainerRepository _trainerRepository;
+         private readonly ITraineeRepository _traineeRepository;
+ */
+        private readonly IMapper _mapper;
         public UserController(APIContext context, IUserRepository userRepository)
         {
             _context = context;
@@ -32,7 +36,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var users = await _userRepository.GetUsersAsync();
+                var users = await _userRepository.GetAllAsync();
 
                 if (users == null || !users.Any())
                 {
@@ -64,7 +68,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserByIdAsync(id);
+                var user = await _userRepository.GetByIdAsync(id);
 
                 if (user == null)
                 {
@@ -107,7 +111,7 @@ namespace OnlineAssessmentTool.Controllers
 
             try
             {
-                var existingUser = await _userRepository.GetUserByIdAsync(id);
+                var existingUser = await _userRepository.GetByIdAsync(id);
 
                 if (existingUser == null)
                 {
@@ -123,11 +127,10 @@ namespace OnlineAssessmentTool.Controllers
                 existingUser.Username = updateUserDto.Username;
                 existingUser.Email = updateUserDto.Email;
                 existingUser.Phone = updateUserDto.Phone;
-                existingUser.isadmin = updateUserDto.IsAdmin;
-                existingUser.RoleId = updateUserDto.RoleId;
+               
                 // Map other properties as needed
 
-                await _userRepository.UpdateUserAsync(existingUser);
+                await _userRepository.UpdateAsync(existingUser);
                 return NoContent();
             }
             catch (DbUpdateConcurrencyException)
@@ -171,13 +174,12 @@ namespace OnlineAssessmentTool.Controllers
                     Username = createUserDto.Username,
                     Email = createUserDto.Email,
                     Phone = createUserDto.Phone,
-                    isadmin = createUserDto.IsAdmin,
-                    RoleId = createUserDto.RoleId,
+                    
                     // Map other properties as needed
                 };
 
-                var createdUser = await _userRepository.CreateUserAsync(user);
-                return CreatedAtAction(nameof(GetUser), new { id = createdUser.UserId }, createdUser);
+                 var createdUser = await _userRepository.AddAsync(user);
+                return CreatedAtAction(nameof(GetUser), new { id = createdUser }, createdUser);
             }
             catch (Exception ex)
             {
@@ -197,7 +199,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var user = await _userRepository.GetUserByIdAsync(id);
+                var user = await _userRepository.GetByIdAsync(id);
 
                 if (user == null)
                 {
@@ -209,7 +211,7 @@ namespace OnlineAssessmentTool.Controllers
                     });
                 }
 
-                await _userRepository.DeleteUserAsync(id);
+                await _userRepository.DeleteAsync(user);
                 return NoContent();
             }
             catch (Exception ex)

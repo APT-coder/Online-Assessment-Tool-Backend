@@ -4,13 +4,9 @@ using System.Collections.Generic;
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
-    public interface IUserRepository
+    public interface IUserRepository:IRepository<Users>
     {
-        Task<IEnumerable<Users>> GetUsersAsync();
-        Task<Users> GetUserByIdAsync(int id);
-        Task<Users> CreateUserAsync(Users user);
-        Task UpdateUserAsync(Users user);
-        Task DeleteUserAsync(int id);
+        Task<int> CreateUserAsync(Users user);
         Task<IEnumerable<Users>> GetUsersByRoleAsync(string roleName);
     }
 }

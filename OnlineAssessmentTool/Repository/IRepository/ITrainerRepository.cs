@@ -2,9 +2,7 @@
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
-    public interface IBatchRepository : IRepository<Batch>
+    public interface ITrainerRepository : IRepository<Trainer>
     {
-        Task<bool> ExistsAsync(int id);
-
     }
 }

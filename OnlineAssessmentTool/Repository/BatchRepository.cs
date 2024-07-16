@@ -2,52 +2,20 @@
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
+using System;
 
 namespace OnlineAssessmentTool.Repository
 {
-    public class BatchRepository : IBatchRepository
+    public class BatchRepository : Repository<Batch>, IBatchRepository
     {
-        private readonly APIContext _context;
-
-        public BatchRepository(APIContext context)
+        public BatchRepository(APIContext context) : base(context)
         {
-            _context = context;
-        }
 
-        public async Task<IEnumerable<Batch>> GetAllAsync()
-        {
-            return await _context.batch.ToListAsync();
         }
-
-        public async Task<Batch> GetAsync(int id)
-        {
-            return await _context.batch.FindAsync(id);
-        }
-
-        public async Task CreateAsync(Batch batch)
-        {
-            await _context.batch.AddAsync(batch);
-        }
-
-        public async Task UpdateAsync(Batch batch)
-        {
-            _context.batch.Update(batch);
-        }
-
-        public async Task RemoveAsync(Batch batch)
-        {
-            _context.batch.Remove(batch);
-        }
-
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.batch.AnyAsync(e => e.batchid == id);
+            return await _context.Permissions.AnyAsync(b => b.Id == id);
         }
 
-        public async Task SaveAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
     }
-
 }

@@ -2,13 +2,9 @@
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
-    public interface IRoleRepository
+    public interface IRoleRepository: IRepository<Role>
     {
-        Task<IEnumerable<Role>> GetAllRolesAsync();
-        Task<Role> GetRoleAsync(int id);
-        Task CreateRoleAsync(Role role);
-        Task UpdateRoleAsync(Role role);
-        Task DeleteRoleAsync(int id);
+       
         bool RoleExists(int id);
     }
 }

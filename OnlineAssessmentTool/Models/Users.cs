@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnlineAssessmentTool.Models
 {
-
-
     public class Users
     {
         [Key]
@@ -15,9 +13,8 @@ namespace OnlineAssessmentTool.Models
         [StringLength(100)]
         public string Username { get; set; }
 
-        [Required]
         [StringLength(255)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -26,16 +23,10 @@ namespace OnlineAssessmentTool.Models
 
         [StringLength(20)]
         public string Phone { get; set; }
-        public bool isadmin { get; set; }
-
-        public int[] BatchIds { get; set; }
 
         [Required]
-        [ForeignKey("Role")]
-        public int RoleId { get; set; }
+        public bool IsAdmin { get; set; }
 
-
-
+        public string? UUID { get; set; }
     }
 }
-

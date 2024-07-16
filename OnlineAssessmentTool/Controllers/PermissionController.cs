@@ -40,7 +40,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var permission = await _permissionRepository.GetAsync(id);
+                var permission = await _permissionRepository.GetByIdAsync(id);
 
                 if (permission == null)
                 {
@@ -80,7 +80,7 @@ namespace OnlineAssessmentTool.Controllers
                     Description = createPermissionDto.Description
                 };
 
-                await _permissionRepository.CreateAsync(permission);
+                await _permissionRepository.AddAsync(permission);
 
                 return CreatedAtAction(nameof(GetPermission), new { id = permission.Id }, new ApiResponse { IsSuccess = true, Result = permission, StatusCode = HttpStatusCode.Created });
             }
@@ -102,7 +102,7 @@ namespace OnlineAssessmentTool.Controllers
                     return BadRequest(new ApiResponse { IsSuccess = false, Message = new List<string> { "Request id does not match permission id" }, StatusCode = HttpStatusCode.BadRequest });
                 }
 
-                var existingPermission = await _permissionRepository.GetAsync(id);
+                var existingPermission = await _permissionRepository.GetByIdAsync(id);
 
                 if (existingPermission == null)
                 {
@@ -129,13 +129,13 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var permission = await _permissionRepository.GetAsync(id);
+                var permission = await _permissionRepository.GetByIdAsync(id);
                 if (permission == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, Message = new List<string> { "Permission not found" }, StatusCode = HttpStatusCode.NotFound });
                 }
 
-                await _permissionRepository.RemoveAsync(permission);
+                await _permissionRepository.DeleteAsync(permission);
 
                 return Ok(new ApiResponse { IsSuccess = true, Result = null, StatusCode = HttpStatusCode.NoContent });
             }

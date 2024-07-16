@@ -18,6 +18,9 @@ namespace OnlineAssessmentTool.Data
         public DbSet<Question> Questions { get; set; }
         public DbSet<QuestionOption> QuestionOptions { get; set; }
 
+        public DbSet<Trainer> Trainers { get; set; }
+        public DbSet<TrainerBatch> TrainerBatches { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -47,6 +50,34 @@ namespace OnlineAssessmentTool.Data
                 .WithOne(qo => qo.Question)
                 .HasForeignKey(qo => qo.QuestionId);
 
+            modelBuilder.Entity<Trainer>().ToTable("Trainers");
+            modelBuilder.Entity<TrainerBatch>().ToTable("TrainerBatches");
+
+            modelBuilder.Entity<Trainer>()
+               .HasOne(t => t.User)
+               .WithMany()
+               .HasForeignKey(t => t.UserId)
+               .OnDelete(DeleteBehavior.Restrict); // Adjust delete behavior as per your requirement
+
+            modelBuilder.Entity<Trainer>()
+                .HasOne(t => t.Role)
+                .WithMany()
+                .HasForeignKey(t => t.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<TrainerBatch>()
+              .HasKey(tb => tb.TrainerBatchId); // Specify the primary key
+
+            // Configure relationships if necessary
+            modelBuilder.Entity<TrainerBatch>()
+                .HasOne(tb => tb.Trainer)
+                .WithMany() // Adjust as per your relationship
+                .HasForeignKey(tb => tb.TrainerId);
+
+            modelBuilder.Entity<TrainerBatch>()
+                .HasOne(tb => tb.Batch)
+                .WithMany() // Adjust as per your relationship
+                .HasForeignKey(tb => tb.BatchId);
         }
     }
 

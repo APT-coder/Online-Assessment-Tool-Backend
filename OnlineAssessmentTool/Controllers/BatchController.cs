@@ -1,18 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using AutoMapper;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Models.DTO;
-
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using AutoMapper;
 
 namespace OnlineAssessmentTool.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     public class BatchController : ControllerBase
     {
         private readonly IBatchRepository _batchRepo;
@@ -29,9 +29,11 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<ActionResult<ApiResponse>> GetBatches()
         {
             var batches = await _batchRepo.GetAllAsync();
+            var mappedBatches = _mapper.Map<IEnumerable<Batch>>(batches);
+
             var response = new ApiResponse
             {
-                Result = _mapper.Map<IEnumerable<Batch>>(batches),
+                Result = mappedBatches,
                 StatusCode = HttpStatusCode.OK
             };
             return Ok(response);
@@ -41,21 +43,24 @@ namespace OnlineAssessmentTool.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResponse>> GetBatch(int id)
         {
-            var batch = await _batchRepo.GetAsync(id);
+            var batch = await _batchRepo.GetByIdAsync(id);
 
             if (batch == null)
             {
                 return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound });
             }
 
+            var mappedBatch = _mapper.Map<Batch>(batch);
+
             var response = new ApiResponse
             {
-                Result = _mapper.Map<Batch>(batch),
+                Result = mappedBatch,
                 StatusCode = HttpStatusCode.OK
             };
             return Ok(response);
         }
 
+        // POST: api/Batch
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateBatch([FromBody] CreateBatchDTO createbatchDTO)
         {
@@ -69,25 +74,46 @@ namespace OnlineAssessmentTool.Controllers
                 });
             }
 
-            var batch = new Batch
+            try
             {
-                batchname = createbatchDTO.batchname
-            };
+                var batch = _mapper.Map<Batch>(createbatchDTO);
 
-            await _batchRepo.CreateAsync(batch);
-            await _batchRepo.SaveAsync();
+                await _batchRepo.AddAsync(batch);
+                await _batchRepo.SaveAsync();
 
-            var response = new ApiResponse
+                var response = new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.Created,
+                    Result = _mapper.Map<CreateBatchDTO>(batch), // Assuming BatchDTO is used for response
+                    Message = { "Batch created successfully" }
+                };
+
+                return CreatedAtAction(nameof(GetBatch), new { id = batch.batchid }, response);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
             {
-                IsSuccess = true,
-                StatusCode = HttpStatusCode.Created,
-                Result = batch,
-                Message = { "Batch created successfully" }
-            };
-
-            return CreatedAtAction(nameof(GetBatch), new { id = batch.batchid }, response);
+                // Handle specific PostgreSQL duplicate key violation error
+                return Conflict(new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.Conflict,
+                    Message = { "Duplicate batch ID detected. Please retry." }
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = { "Error creating batch." }
+                });
+            }
         }
 
+        // PUT: api/Batch/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBatch(int id, [FromBody] UpdateBatchDTO batchDTO)
         {
@@ -96,7 +122,7 @@ namespace OnlineAssessmentTool.Controllers
                 return BadRequest(new ApiResponse { StatusCode = HttpStatusCode.BadRequest, Message = { "Batch ID mismatch" } });
             }
 
-            var batch = await _batchRepo.GetAsync(id);
+            var batch = await _batchRepo.GetByIdAsync(id);
             if (batch == null)
             {
                 return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound, Message = { "Batch not found" } });
@@ -113,7 +139,7 @@ namespace OnlineAssessmentTool.Controllers
                 {
                     IsSuccess = true,
                     StatusCode = HttpStatusCode.OK,
-                    Result = batch,
+                    Result = _mapper.Map<Batch>(batch),
                     Message = { "Batch updated successfully" }
                 };
 
@@ -132,18 +158,17 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
         // DELETE: api/Batch/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteBatch(int id)
         {
-            var batch = await _batchRepo.GetAsync(id);
+            var batch = await _batchRepo.GetByIdAsync(id);
             if (batch == null)
             {
                 return NotFound(new ApiResponse { StatusCode = HttpStatusCode.NotFound, Message = { "Batch not found" } });
             }
 
-            await _batchRepo.RemoveAsync(batch);
+            await _batchRepo.DeleteAsync(batch);
             await _batchRepo.SaveAsync();
 
             return NoContent();

@@ -26,7 +26,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var rolesWithPermissions = await _roleRepository.GetAllRolesAsync();
+                var rolesWithPermissions = await _roleRepository.GetAllAsync();
 
                 if (rolesWithPermissions == null || !rolesWithPermissions.Any())
                 {
@@ -49,7 +49,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var role = await _roleRepository.GetRoleAsync(id);
+                var role = await _roleRepository.GetByIdAsync(id);
                 if (role == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
@@ -80,7 +80,7 @@ namespace OnlineAssessmentTool.Controllers
                     Permissions = createRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList()
                 };
 
-                await _roleRepository.CreateRoleAsync(role);
+                await _roleRepository.AddAsync(role);
 
                 return CreatedAtAction(nameof(GetRole), new { id = role.Id }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = role });
             }
@@ -98,7 +98,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var role = await _roleRepository.GetRoleAsync(id);
+                var role = await _roleRepository.GetByIdAsync(id);
                 if (role == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
@@ -107,7 +107,7 @@ namespace OnlineAssessmentTool.Controllers
                 role.RoleName = updateRoleDTO.RoleName;
                 role.Permissions = updateRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList();
 
-                await _roleRepository.UpdateRoleAsync(role);
+                await _roleRepository.UpdateAsync(role);
 
                 return NoContent();
             }
@@ -124,13 +124,13 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var role = await _roleRepository.GetRoleAsync(id);
+                var role = await _roleRepository.GetByIdAsync(id);
                 if (role == null)
                 {
                     return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
                 }
 
-                await _roleRepository.DeleteRoleAsync(id);
+                await _roleRepository.DeleteAsync(role);
 
                 return NoContent();
             }
