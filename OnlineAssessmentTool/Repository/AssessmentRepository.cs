@@ -1,16 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿/*using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
+using System;
 
 namespace OnlineAssessmentTool.Repository
 {
-    public class AssessmentRepository : IAssessmentRepository
+    public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
     {
-        private readonly APIContext _context;
-
-        public AssessmentRepository(APIContext context)
+       
+        *//*public AssessmentRepository(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -31,7 +31,7 @@ namespace OnlineAssessmentTool.Repository
 
         public async Task AddAssessmentAsync(Assessment assessment)
         {
-            if (assessment.AssessmentId == 0)
+            if (assessment.AssessmentId == 0) 
             {
                 await _context.Assessments.AddAsync(assessment);
             }
@@ -39,22 +39,38 @@ namespace OnlineAssessmentTool.Repository
         }
 
 
-        public async Task<Question> GetQuestionByIdAsync(int questionId)
-        {
-            return await _context.Questions.Include(q => q.QuestionOptions)
-                                           .FirstOrDefaultAsync(q => q.QuestionId == questionId);
-        }
-
+       
         public async Task UpdateAssessmentAsync(Assessment assessment)
         {
             _context.Assessments.Update(assessment);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateQuestionAsync(Question question)
+       
+
+        public async Task DeleteAssessmentAsync(int assessmentId)
         {
-            _context.Questions.Update(question);
-            await _context.SaveChangesAsync();
+            var assessment = await GetAssessmentByIdAsync(assessmentId);
+            if (assessment != null)
+            {
+                _context.Assessments.Remove(assessment);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+       *//*
+
+        private readonly ApplicationDbContext _context;
+        public AssessmentRepository(ApplicationDbContext context) : base(context)
+        {
+
+        }
+
+        public async Task<Assessment> GetAssessmentByIdAsync(int id)
+        {
+            return await _context.Assessments.Include(a => a.Questions)
+                                             .ThenInclude(q => q.QuestionOptions)
+                                             .FirstOrDefaultAsync(a => a.AssessmentId == id);
         }
 
         public async Task DeleteAssessmentAsync(int assessmentId)
@@ -67,17 +83,45 @@ namespace OnlineAssessmentTool.Repository
             }
         }
 
-        public async Task DeleteQuestionAsync(int questionId)
-        {
-            var question = await _context.Questions.Include(q => q.QuestionOptions)
-                                                   .FirstOrDefaultAsync(q => q.QuestionId == questionId);
 
-            if (question != null)
+    }
+}
+*/
+
+
+using Microsoft.EntityFrameworkCore;
+using OnlineAssessmentTool.Data;
+using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository.IRepository;
+using System.Threading.Tasks;
+
+namespace OnlineAssessmentTool.Repository
+{
+    public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
+    {
+        private readonly APIContext _context;
+
+        public AssessmentRepository(APIContext context) : base(context)
+        {
+            _context = context;
+        }
+
+        public async Task<Assessment> GetAssessmentByIdAsync(int id)
+        {
+            return await _context.Assessments.Include(a => a.Questions)
+                                             .ThenInclude(q => q.QuestionOptions)
+                                             .FirstOrDefaultAsync(a => a.AssessmentId == id);
+        }
+
+        public async Task DeleteAssessmentAsync(int assessmentId)
+        {
+            var assessment = await GetAssessmentByIdAsync(assessmentId);
+            if (assessment != null)
             {
-                _context.Questions.Remove(question);
+                _context.Assessments.Remove(assessment);
                 await _context.SaveChangesAsync();
             }
         }
-
     }
 }

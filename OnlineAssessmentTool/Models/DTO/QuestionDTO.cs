@@ -7,7 +7,7 @@
         public string QuestionType { get; set; }
         public string QuestionText { get; set; }
         public int Points { get; set; }
-        public string CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public List<QuestionOptionDTO> QuestionOptions { get; set; }
     }
 }
