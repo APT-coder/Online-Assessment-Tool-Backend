@@ -2,7 +2,9 @@
 {
     public class AssessmentDTO
     {
+        /*internal object AssessmentId;*/
+
         public string AssessmentName { get; set; }
-        public string CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
     }
 }

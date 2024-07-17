@@ -14,12 +14,12 @@ namespace OnlineAssessmentTool.Data
         public DbSet<Users> Users { get; set; }
 
         public DbSet<Batch> batch { get; set; }
+        public DbSet<Trainer> Trainers { get; set; }
+        public DbSet<TrainerBatch> TrainerBatches { get; set; }
+
         public DbSet<Assessment> Assessments { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<QuestionOption> QuestionOptions { get; set; }
-
-        public DbSet<Trainer> Trainers { get; set; }
-        public DbSet<TrainerBatch> TrainerBatches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,7 +36,7 @@ namespace OnlineAssessmentTool.Data
             modelBuilder.Entity<Users>().ToTable("Users");
             modelBuilder.Entity<Role>().ToTable("Roles");
 
-            modelBuilder.Entity<Assessment>().HasKey(a => a.AssessmentId);
+           /* modelBuilder.Entity<Assessment>().HasKey(a => a.AssessmentId);
             modelBuilder.Entity<Question>().HasKey(q => q.QuestionId);
             modelBuilder.Entity<QuestionOption>().HasKey(qo => qo.QuestionOptionId);
 
@@ -48,7 +48,7 @@ namespace OnlineAssessmentTool.Data
             modelBuilder.Entity<Question>()
                 .HasMany(q => q.QuestionOptions)
                 .WithOne(qo => qo.Question)
-                .HasForeignKey(qo => qo.QuestionId);
+                .HasForeignKey(qo => qo.QuestionId);*/
 
             modelBuilder.Entity<Trainer>().ToTable("Trainers");
             modelBuilder.Entity<TrainerBatch>().ToTable("TrainerBatches");
