@@ -20,7 +20,7 @@ namespace OnlineAssessmentTool.Repository
             return await _context.Permissions.AnyAsync(p => p.Id == id);
         }
 
-      
+
     }
 
 }

@@ -1,28 +1,39 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using OnlineAssessmentTool.Models; // Ensure this namespace is used for TrainerBatch, Trainer, Batch, etc.
+using Microsoft.EntityFrameworkCore;
+
 
 namespace OnlineAssessmentTool.Models
 {
     public class Trainer
     {
-            [Key]
-            [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-            public int TrainerId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int TrainerId { get; set; }
 
-            [Required]
-            public int UserId { get; set; } // Foreign key to Users table
+        [Required]
+        [ForeignKey("User")]
+        public int UserId { get; set; }
 
-            [ForeignKey("UserId")]
-            public Users User { get; set; } // Navigation property to Users
 
-            [Required]
-            public DateTime JoinedOn { get; set; }
+        public Users User { get; set; }
 
-            [Required]
-            public int RoleId { get; set; } // Foreign key to Role table
+        [Required]
+        public DateTime JoinedOn { get; set; }
 
-            [ForeignKey("RoleId")]
-            public Role Role { get; set; } // Navigation property to Role
-        }
+        [StringLength(255)]
+        public string? Password { get; set; }
+
+        [Required]
+        [ForeignKey("Role")]
+        public int RoleId { get; set; }
+
+
+        public Role Role { get; set; }
+
+        public List<TrainerBatch> TrainerBatch { get; set; }
 
     }
+
+}

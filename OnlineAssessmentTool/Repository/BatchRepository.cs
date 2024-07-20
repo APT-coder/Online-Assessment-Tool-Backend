@@ -14,8 +14,7 @@ namespace OnlineAssessmentTool.Repository
         }
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.Permissions.AnyAsync(b => b.Id == id);
+            return await _context.batch.AnyAsync(b => b.batchid == id);
         }
-
     }
 }

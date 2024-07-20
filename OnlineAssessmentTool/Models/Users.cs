@@ -13,9 +13,6 @@ namespace OnlineAssessmentTool.Models
         [StringLength(100)]
         public string Username { get; set; }
 
-        [StringLength(255)]
-        public string? Password { get; set; }
-
         [Required]
         [StringLength(100)]
         [EmailAddress]
@@ -27,6 +24,10 @@ namespace OnlineAssessmentTool.Models
         [Required]
         public bool IsAdmin { get; set; }
 
-        public string? UUID { get; set; }
+        public Guid UUID { get; set; }
+
+        [Required]
+        public UserType UserType { get; set; }
+
     }
 }

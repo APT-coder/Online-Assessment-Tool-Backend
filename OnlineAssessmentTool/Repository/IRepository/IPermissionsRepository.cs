@@ -2,11 +2,11 @@
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
-    public interface IPermissionsRepository: IRepository<Permission>
+    public interface IPermissionsRepository : IRepository<Permission>
     {
 
-      
+
         Task<bool> ExistsAsync(int id);
-        
+
     }
 }
