@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace OnlineAssessmentTool.Migrations
 {
     /// <inheritdoc />
-    public partial class newmig : Migration
+    public partial class AddedUserRolePermissions : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -74,11 +74,11 @@ namespace OnlineAssessmentTool.Migrations
                     UserId = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Username = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Password = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     IsAdmin = table.Column<bool>(type: "boolean", nullable: false),
-                    UUID = table.Column<string>(type: "text", nullable: true)
+                    UUID = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserType = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -134,6 +134,33 @@ namespace OnlineAssessmentTool.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Trainees",
+                columns: table => new
+                {
+                    TraineeId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    JoinedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    BatchId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trainees", x => x.TraineeId);
+                    table.ForeignKey(
+                        name: "FK_Trainees_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Trainees_batch_BatchId",
+                        column: x => x.BatchId,
+                        principalTable: "batch",
+                        principalColumn: "batchid",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Trainers",
                 columns: table => new
                 {
@@ -141,6 +168,7 @@ namespace OnlineAssessmentTool.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     JoinedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Password = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     RoleId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -151,13 +179,13 @@ namespace OnlineAssessmentTool.Migrations
                         column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Trainers_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -188,23 +216,21 @@ namespace OnlineAssessmentTool.Migrations
                 name: "TrainerBatches",
                 columns: table => new
                 {
-                    TrainerBatchId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TrainerId = table.Column<int>(type: "integer", nullable: false),
-                    BatchId = table.Column<int>(type: "integer", nullable: false)
+                    Trainer_id = table.Column<int>(type: "integer", nullable: false),
+                    Batch_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TrainerBatches", x => x.TrainerBatchId);
+                    table.PrimaryKey("PK_TrainerBatches", x => new { x.Trainer_id, x.Batch_id });
                     table.ForeignKey(
-                        name: "FK_TrainerBatches_Trainers_TrainerId",
-                        column: x => x.TrainerId,
+                        name: "FK_TrainerBatches_Trainers_Trainer_id",
+                        column: x => x.Trainer_id,
                         principalTable: "Trainers",
                         principalColumn: "TrainerId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TrainerBatches_batch_BatchId",
-                        column: x => x.BatchId,
+                        name: "FK_TrainerBatches_batch_Batch_id",
+                        column: x => x.Batch_id,
                         principalTable: "batch",
                         principalColumn: "batchid",
                         onDelete: ReferentialAction.Cascade);
@@ -226,14 +252,19 @@ namespace OnlineAssessmentTool.Migrations
                 column: "RolesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TrainerBatches_BatchId",
-                table: "TrainerBatches",
+                name: "IX_Trainees_BatchId",
+                table: "Trainees",
                 column: "BatchId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TrainerBatches_TrainerId",
+                name: "IX_Trainees_UserId",
+                table: "Trainees",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrainerBatches_Batch_id",
                 table: "TrainerBatches",
-                column: "TrainerId");
+                column: "Batch_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Trainers_RoleId",
@@ -254,6 +285,9 @@ namespace OnlineAssessmentTool.Migrations
 
             migrationBuilder.DropTable(
                 name: "RolePermission");
+
+            migrationBuilder.DropTable(
+                name: "Trainees");
 
             migrationBuilder.DropTable(
                 name: "TrainerBatches");

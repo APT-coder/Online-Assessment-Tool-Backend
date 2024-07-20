@@ -5,6 +5,7 @@ using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool;
 using System.Text.Json.Serialization;
+using OnlineAssessmentTool.Services.IService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,12 @@ builder.Services.AddScoped<IBatchRepository, BatchRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITrainerRepository, TrainerRepository>();
+builder.Services.AddScoped<ITraineeRepository, TraineeRepository>();
+builder.Services.AddScoped<ITrainerBatchRepository, TrainerBatchRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();

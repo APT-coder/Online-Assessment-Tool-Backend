@@ -9,7 +9,7 @@ using OnlineAssessmentTool.Models.DTO;
 namespace OnlineAssessmentTool.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("[controller]/[action]")]
     public class PermissionController : ControllerBase
     {
         private readonly IPermissionsRepository _permissionRepository;

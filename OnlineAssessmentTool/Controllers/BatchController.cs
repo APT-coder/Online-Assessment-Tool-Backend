@@ -12,7 +12,7 @@ using AutoMapper;
 namespace OnlineAssessmentTool.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     public class BatchController : ControllerBase
     {
         private readonly IBatchRepository _batchRepo;
@@ -101,16 +101,7 @@ namespace OnlineAssessmentTool.Controllers
                     Message = { "Duplicate batch ID detected. Please retry." }
                 });
             }
-            catch (Exception ex)
-            {
-                // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
-                {
-                    IsSuccess = false,
-                    StatusCode = HttpStatusCode.InternalServerError,
-                    Message = { "Error creating batch." }
-                });
-            }
+
         }
 
         // PUT: api/Batch/{id}

@@ -2,9 +2,7 @@
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
-    public interface IRoleRepository : IRepository<Role>
+    public interface ITrainerBatchRepository : IRepository<TrainerBatch>
     {
-
-        bool RoleExists(int id);
     }
 }

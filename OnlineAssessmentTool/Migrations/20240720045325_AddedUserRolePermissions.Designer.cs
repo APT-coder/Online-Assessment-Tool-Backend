@@ -12,8 +12,8 @@ using OnlineAssessmentTool.Data;
 namespace OnlineAssessmentTool.Migrations
 {
     [DbContext(typeof(APIContext))]
-    [Migration("20240717105240_newmig")]
-    partial class newmig
+    [Migration("20240720045325_AddedUserRolePermissions")]
+    partial class AddedUserRolePermissions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -177,6 +177,32 @@ namespace OnlineAssessmentTool.Migrations
                     b.ToTable("Roles", (string)null);
                 });
 
+            modelBuilder.Entity("OnlineAssessmentTool.Models.Trainee", b =>
+                {
+                    b.Property<int>("TraineeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TraineeId"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("JoinedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("TraineeId");
+
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Trainees");
+                });
+
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
                 {
                     b.Property<int>("TrainerId")
@@ -187,6 +213,10 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.Property<DateTime>("JoinedOn")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Password")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("integer");
@@ -205,25 +235,17 @@ namespace OnlineAssessmentTool.Migrations
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.TrainerBatch", b =>
                 {
-                    b.Property<int>("TrainerBatchId")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("Trainer_id")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TrainerBatchId"));
-
-                    b.Property<int>("BatchId")
+                    b.Property<int>("Batch_id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TrainerId")
-                        .HasColumnType("integer");
+                    b.HasKey("Trainer_id", "Batch_id");
 
-                    b.HasKey("TrainerBatchId");
+                    b.HasIndex("Batch_id");
 
-                    b.HasIndex("BatchId");
-
-                    b.HasIndex("TrainerId");
-
-                    b.ToTable("TrainerBatches", (string)null);
+                    b.ToTable("TrainerBatches");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Users", b =>
@@ -242,17 +264,16 @@ namespace OnlineAssessmentTool.Migrations
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Password")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("UUID")
-                        .HasColumnType("text");
+                    b.Property<Guid>("UUID")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("UserType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -301,18 +322,35 @@ namespace OnlineAssessmentTool.Migrations
                     b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
+            modelBuilder.Entity("OnlineAssessmentTool.Models.Trainee", b =>
                 {
-                    b.HasOne("OnlineAssessmentTool.Models.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("OnlineAssessmentTool.Models.Batch", null)
+                        .WithMany("Trainees")
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OnlineAssessmentTool.Models.Users", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
+                {
+                    b.HasOne("OnlineAssessmentTool.Models.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineAssessmentTool.Models.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Role");
@@ -323,14 +361,14 @@ namespace OnlineAssessmentTool.Migrations
             modelBuilder.Entity("OnlineAssessmentTool.Models.TrainerBatch", b =>
                 {
                     b.HasOne("OnlineAssessmentTool.Models.Batch", "Batch")
-                        .WithMany()
-                        .HasForeignKey("BatchId")
+                        .WithMany("TrainerBatch")
+                        .HasForeignKey("Batch_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("OnlineAssessmentTool.Models.Trainer", "Trainer")
-                        .WithMany()
-                        .HasForeignKey("TrainerId")
+                        .WithMany("TrainerBatch")
+                        .HasForeignKey("Trainer_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -359,9 +397,21 @@ namespace OnlineAssessmentTool.Migrations
                     b.Navigation("Questions");
                 });
 
+            modelBuilder.Entity("OnlineAssessmentTool.Models.Batch", b =>
+                {
+                    b.Navigation("Trainees");
+
+                    b.Navigation("TrainerBatch");
+                });
+
             modelBuilder.Entity("OnlineAssessmentTool.Models.Question", b =>
                 {
                     b.Navigation("QuestionOptions");
+                });
+
+            modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
+                {
+                    b.Navigation("TrainerBatch");
                 });
 #pragma warning restore 612, 618
         }
