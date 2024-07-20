@@ -20,6 +20,10 @@ namespace OnlineAssessmentTool
             CreateMap<TrainerDTO, Trainer>().ReverseMap();
             CreateMap<TraineeDTO, Trainee>().ReverseMap();
             CreateMap<UpdateUserDTO, Users>().ReverseMap();
+
+            CreateMap<TraineeAnswerDTO, TraineeAnswer>().ReverseMap();
+            CreateMap<ScheduledAssessmentDTO, ScheduledAssessment>().ReverseMap();
+            CreateMap<AssessmentScoreDTO, AssessmentScore>().ReverseMap();
         }
     }
 }

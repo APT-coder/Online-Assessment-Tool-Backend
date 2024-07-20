@@ -17,5 +17,8 @@ namespace OnlineAssessmentTool.Repository.IRepository
 
         Task DeleteQuestionAsync(int questionId);*/
         Task DeleteAssessmentAsync(int assessmentId);
+        Task<IEnumerable<AssessmentOverviewDTO>> GetAllAssessmentOverviewsAsync();
+        Task<IEnumerable<TraineeScoreDTO>> GetHighPerformersByAssessmentIdAsync(int scheduledAssessmentId);
+        Task<IEnumerable<TraineeScoreDTO>> GetLowPerformersByAssessmentIdAsync(int scheduledAssessmentId);
     }
 }

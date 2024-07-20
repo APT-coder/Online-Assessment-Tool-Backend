@@ -80,6 +80,52 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(response);
         }
 
+        [HttpGet("overview")]
+        public async Task<IResult> GetAllAssessmentOverviews()
+        {
+            var response = new ApiResponse();
+            try
+            {
+                var overviews = await _assessmentRepository.GetAllAssessmentOverviewsAsync();
+                if (overviews == null || !overviews.Any())
+                {
+                    response.IsSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.Message.Add("No assessments found.");
+                }
+                else
+                {
+                    response.IsSuccess = true;
+                    response.Result = overviews;
+                    response.StatusCode = HttpStatusCode.OK;
+                    response.Message.Add("Assessment overviews retrieved successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Message.Add("Error retrieving assessment overviews: " + ex.Message);
+            }
+
+            return Results.Ok(response);
+        }
+
+
+        [HttpGet("highperformers/{assessmentId}")]
+        public async Task<IActionResult> GetHighPerformers(int assessmentId)
+        {
+            var result = await _assessmentRepository.GetHighPerformersByAssessmentIdAsync(assessmentId);
+            Console.WriteLine(result);
+            return Ok(result);
+        }
+
+        [HttpGet("lowperformers/{assessmentId}")]
+        public async Task<IActionResult> GetLowPerformers(int assessmentId)
+        {
+            var result = await _assessmentRepository.GetLowPerformersByAssessmentIdAsync(assessmentId);
+            return Ok(result);
+        }
 
         [HttpPost]
         public async Task<IActionResult> CreateAssessment([FromBody] AssessmentDTO assessmentDTO)

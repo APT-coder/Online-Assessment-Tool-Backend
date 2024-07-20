@@ -47,6 +47,9 @@ builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
 builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
+builder.Services.AddScoped<IScheduledAssessmentRepository, ScheduledAssessmentRepository>();
+builder.Services.AddScoped<ITraineeAnswerRepository, TraineeAnswerRepository>();
+builder.Services.AddScoped<IAssessmentScoreRepository, AssessmentScoreRepository>();
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 

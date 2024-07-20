@@ -12,9 +12,10 @@ namespace OnlineAssessmentTool.Models
         public string AssessmentName { get; set; }
         public DateTime CreatedOn { get; set; }
         [Required]
-
+        [ForeignKey("Trainer")]
         public int CreatedBy { get; set; }
         [Required]
         public ICollection<Question> Questions { get; set; }
+        public Trainer Trainer { get; set; }
     }
 }

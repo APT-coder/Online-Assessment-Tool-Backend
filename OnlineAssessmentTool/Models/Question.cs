@@ -19,11 +19,14 @@ namespace OnlineAssessmentTool.Models
         [Required]
         public int Points { get; set; }
         [Required]
+        [ForeignKey("Trainer")]
         public int CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }
         [Required]
         public Assessment Assessment { get; set; }
         [Required]
         public ICollection<QuestionOption> QuestionOptions { get; set; }
+        public Trainer Trainer { get; set; }
+        public TraineeAnswer TraineeAnswer { get; set; }
     }
 }
