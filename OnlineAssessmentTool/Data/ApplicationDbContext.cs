@@ -23,6 +23,9 @@ namespace OnlineAssessmentTool.Data
         public DbSet<TrainerBatch> TrainerBatches { get; set; }
 
         public DbSet<Trainee> Trainees { get; set; }
+        public DbSet<ScheduledAssessment> ScheduledAssessments { get; set; }
+        public DbSet<TraineeAnswer> TraineeAnswers { get; set; }
+        public DbSet<AssessmentScore> AssessmentScores { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
