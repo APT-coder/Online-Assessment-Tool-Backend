@@ -192,5 +192,22 @@ namespace OnlineAssessmentTool.Repository
 
             return highPerformers;
         }
+
+        public async Task<List<AssessmentTableDTO>> GetAssessmentTable()
+        {
+            var result = from a in _context.Assessments
+                         join sa in _context.ScheduledAssessments on a.AssessmentId equals sa.AssessmentId
+                         join b in _context.batch on sa.BatchId equals b.batchid
+                         select new AssessmentTableDTO
+                         {
+                             AssessmentName = a.AssessmentName,
+                             BatchName = b.batchname,
+                             CreatedOn = a.CreatedOn,
+                             ScheduledDate = sa.ScheduledDate,
+                             Status = sa.Status.ToString()
+                         };
+
+            return await result.ToListAsync();
+        }
     }
 }

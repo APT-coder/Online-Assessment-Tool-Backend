@@ -127,6 +127,13 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(result);
         }
 
+        [HttpGet("AssessmentTable")]
+        public async Task<IActionResult> GetAssessmentTable()
+        {
+            var dtos = await _assessmentRepository.GetAssessmentTable();
+            return Ok(dtos);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateAssessment([FromBody] AssessmentDTO assessmentDTO)
         {
