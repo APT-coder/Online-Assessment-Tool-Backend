@@ -14,14 +14,11 @@ namespace OnlineAssessmentTool.Services.IService
              List<int> batchIds = null);
 
         Task<List<Users>> GetUsersByRoleNameAsync(string roleName);
-        Task<Users> GetUserAsync(int userId);
-        Task<TrainerDTO> GetTrainerDetailsAsync(int userId);
-        Task<TraineeDTO> GetTraineeDetailsAsync(int userId);
-        Task<bool> UpdateUserAsync(int userId, UpdateUserDTO updateUserDto);
-        Task<bool> UpdateTrainerAsync(int userId, TrainerDTO trainerDto);
-        Task<bool> UpdateTraineeAsync(int userId, TraineeDTO traineeDto);
 
-        Task DeleteUserAsync(int id);
+        public Task DeleteUserAsync(int userId);
+        public Task<Users> GetUserByIdAsync(int id);
+        public Task<bool> UpdateUserAsync(Users user);
+        public Task<UserDetailsDTO> GetUserDetailsByEmailAsync(string email);
         /*  Task<bool> CreateUserAsync(CreateUserDTO createUserDto, TrainerDTO createTrainerDto = null, TraineeDTO createTraineeDto = null);
           Task<bool> UpdateUserAsync(UpdateUserDTO updateUserDto, TrainerDTO updateTrainerDto = null, TraineeDTO updateTraineeDto = null);*/
     }

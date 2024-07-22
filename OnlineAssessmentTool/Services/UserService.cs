@@ -103,55 +103,6 @@ public class UserService : IUserService
     }
 
 
-    public async Task<Users> GetUserAsync(int userId)
-    {
-        return await _context.Users
-            .FirstOrDefaultAsync(u => u.UserId == userId);
-    }
-
-
-
-    public async Task<TrainerDTO> GetTrainerDetailsAsync(int userId)
-    {
-        var trainer = await _trainerRepository.GetByIdAsync(userId);
-        return _mapper.Map<TrainerDTO>(trainer);
-    }
-
-    public async Task<TraineeDTO> GetTraineeDetailsAsync(int userId)
-    {
-        var trainee = await _traineeRepository.GetByIdAsync(userId);
-        return _mapper.Map<TraineeDTO>(trainee);
-    }
-
-    public async Task<bool> UpdateUserAsync(int userId, UpdateUserDTO updateUserDto)
-    {
-        var user = await _userRepository.GetByIdAsync(userId);
-        if (user == null) return false;
-
-        _mapper.Map(updateUserDto, user);
-        await _userRepository.UpdateAsync(user);
-        return true;
-    }
-
-    public async Task<bool> UpdateTrainerAsync(int userId, TrainerDTO trainerDto)
-    {
-        var trainer = await _trainerRepository.GetByIdAsync(userId);
-        if (trainer == null) return false;
-
-        _mapper.Map(trainerDto, trainer);
-        await _trainerRepository.UpdateAsync(trainer);
-        return true;
-    }
-
-    public async Task<bool> UpdateTraineeAsync(int userId, TraineeDTO traineeDto)
-    {
-        var trainee = await _traineeRepository.GetByIdAsync(userId);
-        if (trainee == null) return false;
-
-        _mapper.Map(traineeDto, trainee);
-        await _traineeRepository.UpdateAsync(trainee);
-        return true;
-    }
 
 
     public async Task DeleteUserAsync(int userId)
@@ -192,4 +143,104 @@ public class UserService : IUserService
     }
 
 
+
+
+
+
+    public async Task<bool> UpdateUserAsync(Users user)
+    {
+        // Retrieve the existing user
+        var existingUser = await _userRepository.GetByIdAsync(user.UserId);
+        if (existingUser == null)
+        {
+            return false;
+        }
+
+        // Update user properties
+        existingUser.Username = user.Username;
+        existingUser.Email = user.Email;
+        existingUser.Phone = user.Phone;
+        existingUser.IsAdmin = user.IsAdmin;
+        existingUser.UserType = user.UserType;
+
+        // Handle specific user types
+        if (user.UserType == UserType.Trainer)
+        {
+            var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
+            if (trainer != null)
+            {
+                trainer.User = existingUser;  // Update Trainer with existing user
+                _trainerRepository.UpdateAsync(trainer); // Ensure Trainer is updated
+            }
+        }
+        else if (user.UserType == UserType.Trainee)
+        {
+            var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
+            if (trainee != null)
+            {
+                trainee.User = existingUser;  // Update Trainee with existing user
+                _traineeRepository.UpdateAsync(trainee); // Ensure Trainee is updated
+            }
+        }
+
+        // Update the user in the repository
+        _userRepository.UpdateAsync(existingUser);
+        return await _userRepository.SaveAsync();
+    }
+
+
+    public async Task<Users> GetUserByIdAsync(int id)
+    {
+        return await _userRepository.GetByIdAsync(id);
+    }
+
+
+
+
+    public async Task<UserDetailsDTO> GetUserDetailsByEmailAsync(string email)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+            return null;
+
+        var userDetails = new UserDetailsDTO
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Email = user.Email,
+            UserType = user.UserType,
+            IsAdmin = user.IsAdmin
+        };
+
+        if (user.UserType == UserType.Trainer)
+        {
+            var trainer = await _context.Trainers
+                .Include(t => t.Role)
+                .ThenInclude(r => r.Permissions)
+                .Include(t => t.TrainerBatch)
+                .ThenInclude(tb => tb.Batch)
+                .FirstOrDefaultAsync(t => t.UserId == user.UserId);
+
+            userDetails.Trainer = trainer;
+            userDetails.Role = trainer?.Role;
+            userDetails.Permissions = trainer?.Role?.Permissions.ToList();
+        }
+        else if (user.UserType == UserType.Trainee)
+        {
+            var trainee = await _context.Trainees
+                .Include(t => t.Batch)
+                .FirstOrDefaultAsync(t => t.UserId == user.UserId);
+
+            userDetails.Trainee = trainee;
+        }
+
+        return userDetails;
+    }
+
+
+
 }
+
+

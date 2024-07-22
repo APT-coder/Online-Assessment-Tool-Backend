@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OnlineAssessmentTool.Data;
@@ -11,9 +12,11 @@ using OnlineAssessmentTool.Data;
 namespace OnlineAssessmentTool.Migrations
 {
     [DbContext(typeof(APIContext))]
-    partial class APIContextModelSnapshot : ModelSnapshot
+    [Migration("20240722172456_updatedusercontroller")]
+    partial class updatedusercontroller
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,7 +47,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("Assessments", (string)null);
+                    b.ToTable("Assessments");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.AssessmentScore", b =>
@@ -69,7 +72,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("AssessmentScoreId");
 
-                    b.ToTable("AssessmentScores", (string)null);
+                    b.ToTable("AssessmentScores");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Batch", b =>
@@ -87,7 +90,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("batchid");
 
-                    b.ToTable("batch", (string)null);
+                    b.ToTable("batch");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Permission", b =>
@@ -108,7 +111,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Question", b =>
@@ -145,7 +148,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.QuestionOption", b =>
@@ -183,7 +186,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("QuestionOptions", (string)null);
+                    b.ToTable("QuestionOptions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Role", b =>
@@ -249,7 +252,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("ScheduledAssessmentId");
 
-                    b.ToTable("ScheduledAssessments", (string)null);
+                    b.ToTable("ScheduledAssessments");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainee", b =>
@@ -275,7 +278,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Trainees", (string)null);
+                    b.ToTable("Trainees");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.TraineeAnswer", b =>
@@ -310,7 +313,7 @@ namespace OnlineAssessmentTool.Migrations
                     b.HasIndex("QuestionId")
                         .IsUnique();
 
-                    b.ToTable("TraineeAnswers", (string)null);
+                    b.ToTable("TraineeAnswers");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
@@ -355,7 +358,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("Batch_id");
 
-                    b.ToTable("TrainerBatches", (string)null);
+                    b.ToTable("TrainerBatches");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Users", b =>
@@ -407,7 +410,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RolePermission", (string)null);
+                    b.ToTable("RolePermission");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Assessment", b =>

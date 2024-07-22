@@ -8,5 +8,6 @@ namespace OnlineAssessmentTool.Repository.IRepository
     {
 
         Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<Users> GetByIdAsync(int id);
     }
 }

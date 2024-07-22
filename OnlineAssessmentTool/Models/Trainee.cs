@@ -23,8 +23,8 @@ namespace OnlineAssessmentTool.Models
         public int BatchId { get; set; }
 
         // Navigation property for Batch
-        /* public Batch Batch { get; set; }
-         public AssessmentScore AssessmentScore { get; set; }*/
+        public Batch Batch { get; set; }
+        /* public AssessmentScore AssessmentScore { get; set; }*/
     }
 }
 

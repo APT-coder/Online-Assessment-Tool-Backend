@@ -46,54 +46,15 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(users);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUser(int userId)
+        [HttpGet("details/{email}")]
+        public async Task<IActionResult> GetUserDetails(string email)
         {
-            var user = await _userService.GetUserAsync(userId);
-            if (user == null) return NotFound();
-            return Ok(user);
-        }
+            var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
+            if (userDetails == null)
+                return NotFound();
 
-        [HttpGet("trainer/{userId}")]
-        public async Task<IActionResult> GetTrainerDetails(int userId)
-        {
-            var trainerDetails = await _userService.GetTrainerDetailsAsync(userId);
-            if (trainerDetails == null) return NotFound();
-            return Ok(trainerDetails);
+            return Ok(userDetails);
         }
-
-        [HttpGet("trainee/{userId}")]
-        public async Task<IActionResult> GetTraineeDetails(int userId)
-        {
-            var traineeDetails = await _userService.GetTraineeDetailsAsync(userId);
-            if (traineeDetails == null) return NotFound();
-            return Ok(traineeDetails);
-        }
-
-        [HttpPut("user/{userId}")]
-        public async Task<IActionResult> UpdateUser(int userId, [FromBody] UpdateUserDTO updateUserDto)
-        {
-            var result = await _userService.UpdateUserAsync(userId, updateUserDto);
-            if (!result) return NotFound();
-            return NoContent();
-        }
-
-        [HttpPut("trainer/{userId}")]
-        public async Task<IActionResult> UpdateTrainer(int userId, [FromBody] TrainerDTO trainerDto)
-        {
-            var result = await _userService.UpdateTrainerAsync(userId, trainerDto);
-            if (!result) return NotFound();
-            return NoContent();
-        }
-
-        [HttpPut("trainee/{userId}")]
-        public async Task<IActionResult> UpdateTrainee(int userId, [FromBody] TraineeDTO traineeDto)
-        {
-            var result = await _userService.UpdateTraineeAsync(userId, traineeDto);
-            if (!result) return NotFound();
-            return NoContent();
-        }
-
 
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
@@ -107,6 +68,31 @@ namespace OnlineAssessmentTool.Controllers
             return BadRequest(new { message = "User creation failed" });
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
+        {
+            if (id != user.UserId)
+            {
+                return BadRequest("User ID mismatch");
+            }
+
+            var existingUser = await _userService.GetUserByIdAsync(id);
+            if (existingUser == null)
+            {
+                return NotFound("User not found");
+            }
+
+            bool result = await _userService.UpdateUserAsync(user);
+
+            if (result)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return StatusCode(500, "An error occurred while updating the user");
+            }
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)

@@ -16,6 +16,10 @@ namespace OnlineAssessmentTool.Repository
         {
             return await _context.Database.BeginTransactionAsync();
         }
+        public async Task<Users> GetByIdAsync(int id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
     }
 
 }
