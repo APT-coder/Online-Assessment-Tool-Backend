@@ -105,8 +105,11 @@ public class UserService : IUserService
 
     public async Task<Users> GetUserAsync(int userId)
     {
-        return await _userRepository.GetByIdAsync(userId);
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.UserId == userId);
     }
+
+
 
     public async Task<TrainerDTO> GetTrainerDetailsAsync(int userId)
     {
@@ -151,46 +154,42 @@ public class UserService : IUserService
     }
 
 
-    public async Task<bool> DeleteUserAsync(int userId)
+    public async Task DeleteUserAsync(int userId)
     {
-        try
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
         {
-            // 1. Retrieve related entities
-            var trainers = await _trainerRepository.GetByIdAsync(userId);
-            var trainees = await _traineeRepository.GetByIdAsync(userId);
-            var trainerBatches = await _trainerBatchRepository.GetByIdAsync(userId);
-
-            // 2. Delete related entities
-
-            _trainerRepository.DeleteAsync(trainers);
-
-
-
-            _traineeRepository.DeleteAsync(trainees);
-
-
-
-            _trainerBatchRepository.DeleteAsync(trainerBatches);
-
-
-            // 3. Delete the user
-            var user = await _userRepository.GetByIdAsync(userId);
-            if (user == null) return false;
-
-            _userRepository.DeleteAsync(user);
-
-            // 4. Save changes to the database
-            await _userRepository.SaveAsync();
-
-            return true;
+            throw new Exception("User not found");
         }
-        catch (Exception ex)
+
+        var userType = user.UserType;
+
+        // If the user is a Trainer, delete associated Trainer and TrainerBatches records
+        if (userType == UserType.Trainer)
         {
-            // Log the exception
-            Console.WriteLine($"An error occurred while deleting the user: {ex.Message}");
-            // Handle or rethrow the exception as needed
-            return false;
+            var trainer = await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == userId);
+            if (trainer != null)
+            {
+                var trainerBatches = _context.TrainerBatches.Where(tb => tb.Trainer_id == trainer.TrainerId);
+                _context.TrainerBatches.RemoveRange(trainerBatches);
+                _context.Trainers.Remove(trainer);
+            }
         }
+
+        // If the user is a Trainee, delete the associated Trainee record
+        if (userType == UserType.Trainee)
+        {
+            var trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.UserId == userId);
+            if (trainee != null)
+            {
+                _context.Trainees.Remove(trainee);
+            }
+        }
+
+        // Finally, delete the User record
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
     }
+
 
 }

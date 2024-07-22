@@ -52,17 +52,33 @@ namespace OnlineAssessmentTool.Controllers
                 var role = await _roleRepository.GetByIdAsync(id);
                 if (role == null)
                 {
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Role not found." }
+                    });
                 }
 
-                return Ok(new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.OK, Result = role });
+                return Ok(new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.OK,
+                    Result = role
+                });
             }
             catch (Exception ex)
             {
                 // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving role from database." } });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error retrieving role from database." }
+                });
             }
         }
+
 
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostRole(CreateRoleDTO createRoleDTO)

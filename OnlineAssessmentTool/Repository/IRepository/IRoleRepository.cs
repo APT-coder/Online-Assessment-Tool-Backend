@@ -1,4 +1,5 @@
-﻿using OnlineAssessmentTool.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using OnlineAssessmentTool.Models;
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
@@ -6,5 +7,10 @@ namespace OnlineAssessmentTool.Repository.IRepository
     {
 
         bool RoleExists(int id);
+
+        public Task<Role> GetByIdAsync(int id);
+        //  public  Task<Role> GetRoleWithPermissionsAsync(int roleId);
     }
+
+
 }

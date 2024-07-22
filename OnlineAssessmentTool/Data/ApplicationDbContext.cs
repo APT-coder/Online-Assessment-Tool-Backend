@@ -30,16 +30,25 @@ namespace OnlineAssessmentTool.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Role>()
-               .Property(r => r.Id)
-               .UseIdentityColumn();
+              .Property(r => r.Id)
+              .UseIdentityColumn();
 
             modelBuilder.Entity<Role>()
-                .HasMany(x => x.Permissions)
-                .WithMany(x => x.Roles)
-                .UsingEntity(j => j.ToTable("RolePermission"));
+                .HasMany(r => r.Permissions)
+                .WithMany(p => p.Roles)
+                .UsingEntity<Dictionary<string, object>>(
+                    "RolePermission",
+                    j => j.HasOne<Permission>()
+                          .WithMany()
+                          .HasForeignKey("PermissionId")
+                          .OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasOne<Role>()
+                          .WithMany()
+                          .HasForeignKey("RoleId")
+                          .OnDelete(DeleteBehavior.Cascade));
 
             modelBuilder.Entity<TrainerBatch>()
-                  .HasKey(ba => new { ba.Trainer_id, ba.Batch_id });
+                 .HasKey(ba => new { ba.Trainer_id, ba.Batch_id });
             modelBuilder.Entity<TrainerBatch>()
                       .HasOne(ba => ba.Trainer)
                       .WithMany(b => b.TrainerBatch)
@@ -52,20 +61,6 @@ namespace OnlineAssessmentTool.Data
 
             modelBuilder.Entity<Users>().ToTable("Users");
             modelBuilder.Entity<Role>().ToTable("Roles");
-
-            /*modelBuilder.Entity<Assessment>().HasKey(a => a.AssessmentId);
-            modelBuilder.Entity<Question>().HasKey(q => q.QuestionId);
-            modelBuilder.Entity<QuestionOption>().HasKey(qo => qo.QuestionOptionId);
-
-            modelBuilder.Entity<Assessment>()
-                .HasMany(a => a.Questions)
-                .WithOne(q => q.Assessment)
-                .HasForeignKey(q => q.AssessmentId);
-
-            modelBuilder.Entity<Question>()
-                .HasMany(q => q.QuestionOptions)
-                .WithOne(qo => qo.Question)
-                .HasForeignKey(qo => qo.QuestionId);*/
 
             modelBuilder.Entity<Trainer>().ToTable("Trainers");
 
@@ -81,6 +76,20 @@ namespace OnlineAssessmentTool.Data
                 .WithMany()
                 .HasForeignKey(t => t.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            /*modelBuilder.Entity<Assessment>().HasKey(a => a.AssessmentId);
+            modelBuilder.Entity<Question>().HasKey(q => q.QuestionId);
+            modelBuilder.Entity<QuestionOption>().HasKey(qo => qo.QuestionOptionId);
+
+            modelBuilder.Entity<Assessment>()
+                .HasMany(a => a.Questions)
+                .WithOne(q => q.Assessment)
+                .HasForeignKey(q => q.AssessmentId);
+
+            modelBuilder.Entity<Question>()
+                .HasMany(q => q.QuestionOptions)
+                .WithOne(qo => qo.Question)
+                .HasForeignKey(qo => qo.QuestionId);*/
         }
     }
 

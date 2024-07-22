@@ -108,40 +108,18 @@ namespace OnlineAssessmentTool.Controllers
         }
 
 
-        // DELETE: api/Users/DeleteUser/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
-                var user = await _userRepository.GetByIdAsync(id);
-
-                if (user == null)
-                {
-                    return NotFound(new ApiResponse
-                    {
-                        IsSuccess = false,
-                        StatusCode = HttpStatusCode.NotFound,
-                        Message = new List<string> { "User not found." }
-                    });
-                }
-
-                await _userRepository.DeleteAsync(user);
-                return NoContent();
+                await _userService.DeleteUserAsync(id);
+                return NoContent(); // Returns 204 No Content
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
-                {
-                    IsSuccess = false,
-                    StatusCode = HttpStatusCode.InternalServerError,
-                    Message = new List<string> { "Error deleting user." }
-                });
+                return BadRequest(new { message = ex.Message });
             }
         }
-
-
-
     }
 }

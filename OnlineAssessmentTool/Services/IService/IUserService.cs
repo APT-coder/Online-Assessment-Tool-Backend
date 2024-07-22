@@ -20,6 +20,8 @@ namespace OnlineAssessmentTool.Services.IService
         Task<bool> UpdateUserAsync(int userId, UpdateUserDTO updateUserDto);
         Task<bool> UpdateTrainerAsync(int userId, TrainerDTO trainerDto);
         Task<bool> UpdateTraineeAsync(int userId, TraineeDTO traineeDto);
+
+        Task DeleteUserAsync(int id);
         /*  Task<bool> CreateUserAsync(CreateUserDTO createUserDto, TrainerDTO createTrainerDto = null, TraineeDTO createTraineeDto = null);
           Task<bool> UpdateUserAsync(UpdateUserDTO updateUserDto, TrainerDTO updateTrainerDto = null, TraineeDTO updateTraineeDto = null);*/
     }
