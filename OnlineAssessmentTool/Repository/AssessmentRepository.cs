@@ -200,6 +200,7 @@ namespace OnlineAssessmentTool.Repository
                          join b in _context.batch on sa.BatchId equals b.batchid
                          select new AssessmentTableDTO
                          {
+                             AssessmentId = sa.AssessmentId,
                              AssessmentName = a.AssessmentName,
                              BatchName = b.batchname,
                              CreatedOn = a.CreatedOn,
@@ -208,6 +209,71 @@ namespace OnlineAssessmentTool.Repository
                          };
 
             return await result.ToListAsync();
+        }
+
+        public async Task<List<TraineeAssessmentTableDTO>> GetTraineeAssessmentDetails(int scheduledAssessmentId)
+        {
+            // Get the batch ID from the scheduled assessment
+            var scheduledAssessment = await _context.ScheduledAssessments
+                                                    .Where(sa => sa.ScheduledAssessmentId == scheduledAssessmentId)
+                                                    .Select(sa => sa.BatchId)
+                                                    .FirstOrDefaultAsync();
+
+            if (scheduledAssessment == 0)
+            {
+                return new List<TraineeAssessmentTableDTO>(); // or handle this case as needed
+            }
+
+            // Fetch all trainees for the given batch and sort by username
+            var batchTrainees = await _context.Trainees
+                                               .Where(t => t.BatchId == scheduledAssessment)
+                                               .Include(t => t.User)
+                                               .OrderBy(t => t.User.Username) // Sorting by username
+                                               .ToListAsync();
+
+            // Fetch assessment scores
+            var assessmentScores = await _context.AssessmentScores
+                                                 .Where(a => a.ScheduledAssessmentId == scheduledAssessmentId)
+                                                 .ToListAsync();
+
+            var traineeScores = assessmentScores.ToDictionary(a => a.TraineeId, a => a.AvergeScore);
+
+            var traineeDetails = new List<TraineeAssessmentTableDTO>();
+
+            foreach (var trainee in batchTrainees)
+            {
+                var isCompleted = traineeScores.ContainsKey(trainee.TraineeId);
+                var status = isCompleted ? AttendanceStatus.Completed : AttendanceStatus.Absent;
+                var score = isCompleted ? traineeScores[trainee.TraineeId] : 0;
+
+                traineeDetails.Add(new TraineeAssessmentTableDTO
+                {
+                    TraineeName = trainee.User.Username,
+                    IsPresent = status.ToString(),
+                    Score = score
+                });
+            }
+
+            return traineeDetails;
+        }
+
+
+        private async Task<bool> CheckAttendanceStatus(int batchId, int traineeId, int scheduledAssessmentId)
+        {
+            // Fetch all trainee IDs for the given batch
+            var batchTrainees = await _context.Trainees
+                                               .Where(t => t.BatchId == batchId)
+                                               .Select(t => t.TraineeId)
+                                               .ToListAsync();
+
+            // Fetch all trainee IDs who have assessment scores for the given scheduled assessment
+            var scoredTrainees = await _context.AssessmentScores
+                                                .Where(a => a.ScheduledAssessmentId == scheduledAssessmentId)
+                                                .Select(a => a.TraineeId)
+                                                .ToListAsync();
+
+            // Determine if the given trainee ID is in the list of scored trainees
+            return scoredTrainees.Contains(traineeId) && batchTrainees.Contains(traineeId);
         }
     }
 }

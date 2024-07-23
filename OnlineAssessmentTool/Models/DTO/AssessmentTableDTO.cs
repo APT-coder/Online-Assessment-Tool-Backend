@@ -2,6 +2,7 @@
 {
     public class AssessmentTableDTO
     {
+        public int AssessmentId { get; set; }
         public string AssessmentName { get; set; }
         public string BatchName { get; set; }
         public DateTime CreatedOn { get; set; }
