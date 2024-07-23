@@ -5,6 +5,7 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Data;
+using System.Globalization;
 using System.Net;
 
 namespace OnlineAssessmentTool.Controllers
@@ -63,14 +64,26 @@ namespace OnlineAssessmentTool.Controllers
             try
             {
                 // Explicitly cast the Status from DTO to the model's Status enum
-                ;
+                if (!TimeSpan.TryParseExact(scheduledAssessmentDTO.AssessmentDuration, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out var assessmentDuration))
+                {
+                    return BadRequest(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Message = new List<string> { "Invalid format for AssessmentDuration. Expected format is 'hh:mm:ss'." }
+                    });
+                }
+
+
+
+
 
                 var scheduledAssessment = new ScheduledAssessment
                 {
                     BatchId = scheduledAssessmentDTO.BatchId,
                     AssessmentId = scheduledAssessmentDTO.AssessmentId,
                     ScheduledDate = scheduledAssessmentDTO.ScheduledDate,
-                    AssessmentDuration = scheduledAssessmentDTO.AssessmentDuration,
+                    AssessmentDuration = assessmentDuration,
                     StartDate = scheduledAssessmentDTO.StartDate,
                     EndDate = scheduledAssessmentDTO.EndDate,
                     StartTime = scheduledAssessmentDTO.StartTime,
@@ -132,10 +145,21 @@ namespace OnlineAssessmentTool.Controllers
                     return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Assessment not found." } });
                 }
 
+                // Convert string to TimeSpan
+                if (!TimeSpan.TryParseExact(scheduledAssessmentDTO.AssessmentDuration, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out var assessmentDuration))
+                {
+                    return BadRequest(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Message = new List<string> { "Invalid format for AssessmentDuration. Expected format is 'hh:mm:ss'." }
+                    });
+                }
+
                 scheduledAssessment.BatchId = scheduledAssessmentDTO.BatchId;
                 scheduledAssessment.AssessmentId = scheduledAssessmentDTO.AssessmentId;
                 scheduledAssessment.ScheduledDate = scheduledAssessmentDTO.ScheduledDate;
-                scheduledAssessment.AssessmentDuration = scheduledAssessmentDTO.AssessmentDuration;
+                scheduledAssessment.AssessmentDuration = assessmentDuration;
                 scheduledAssessment.StartDate = scheduledAssessmentDTO.StartDate;
                 scheduledAssessment.EndDate = scheduledAssessmentDTO.EndDate;
                 scheduledAssessment.StartTime = scheduledAssessmentDTO.StartTime;

@@ -57,8 +57,8 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                // Explicitly cast the Status from DTO to the model's Status enum
-                ;
+
+
 
                 var traineeAnswer = new TraineeAnswer
                 {
@@ -83,7 +83,7 @@ namespace OnlineAssessmentTool.Controllers
             catch (Exception ex)
             {
                 // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating scheduled assessment." } });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating answer." } });
             }
         }
 

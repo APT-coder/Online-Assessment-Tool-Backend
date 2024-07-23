@@ -7,7 +7,7 @@ namespace OnlineAssessmentTool.Models.DTO
         public int BatchId { get; set; }
         public int AssessmentId { get; set; }
         public DateTime ScheduledDate { get; set; }
-        public TimeSpan AssessmentDuration { get; set; }
+        public string AssessmentDuration { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime StartTime { get; set; }
@@ -23,3 +23,4 @@ namespace OnlineAssessmentTool.Models.DTO
 
 
 }
+
