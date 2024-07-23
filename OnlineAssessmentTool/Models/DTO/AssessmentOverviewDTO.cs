@@ -2,6 +2,7 @@
 {
     public class AssessmentOverviewDTO
     {
+        public int AssessmentId { get; set; }
         public string AssessmentName { get; set; }
         public DateTime Date { get; set; }
         public string Trainer { get; set; }
