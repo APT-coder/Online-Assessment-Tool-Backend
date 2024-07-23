@@ -134,6 +134,18 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(dtos);
         }
 
+
+        [HttpGet("GetTraineeAssessmentDetails/{scheduledAssessmentId}")]
+        public async Task<ActionResult<List<TraineeAssessmentTableDTO>>> GetTraineeAssessmentDetails(int scheduledAssessmentId)
+        {
+            var result = await _assessmentRepository.GetTraineeAssessmentDetails(scheduledAssessmentId);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateAssessment([FromBody] AssessmentDTO assessmentDTO)
         {
