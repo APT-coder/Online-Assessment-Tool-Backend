@@ -210,6 +210,7 @@ public class UserService : IUserService
             UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
+            Phone = user.Phone,
             UserType = user.UserType,
             IsAdmin = user.IsAdmin
         };

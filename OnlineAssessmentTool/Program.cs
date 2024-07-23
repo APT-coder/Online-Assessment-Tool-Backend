@@ -55,7 +55,8 @@ builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 builder.Services.AddDbContext<APIContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString).EnableSensitiveDataLogging() // Enables detailed error messages including sensitive data
+                      .EnableDetailedErrors();
 });
 var app = builder.Build();
 

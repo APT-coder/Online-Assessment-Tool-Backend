@@ -57,7 +57,9 @@ namespace OnlineAssessmentTool.Controllers
                     results.Add("UserId", user.UserId);
                     results.Add("UserName", user.Username);
                     results.Add("UserEmail", user.Email);
+                    results.Add("UserPhone", user.Phone);
                     results.Add("UserAdmin", user.IsAdmin);
+                    results.Add("UserType", user.UserType);
                     if(user.UserType == UserType.Trainer)
                     {
                         results.Add("UserBatch", user.Trainer.TrainerBatch);
