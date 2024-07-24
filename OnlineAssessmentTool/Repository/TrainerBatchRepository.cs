@@ -18,6 +18,11 @@ namespace OnlineAssessmentTool.Repository
                 .Where(tb => tb.Trainer_id == trainerId)
                 .ToListAsync();
         }
+        public async Task RemoveRangeAsync(IEnumerable<TrainerBatch> entities)
+        {
+            _context.RemoveRange(entities);
+            await _context.SaveChangesAsync();
+        }
 
 
     }

@@ -142,61 +142,6 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
     }
 
-
-
-
-
-
-    public async Task<bool> UpdateUserAsync(Users user)
-    {
-        // Retrieve the existing user
-        var existingUser = await _userRepository.GetByIdAsync(user.UserId);
-        if (existingUser == null)
-        {
-            return false;
-        }
-
-        // Update user properties
-        existingUser.Username = user.Username;
-        existingUser.Email = user.Email;
-        existingUser.Phone = user.Phone;
-        existingUser.IsAdmin = user.IsAdmin;
-        existingUser.UserType = user.UserType;
-
-        // Handle specific user types
-        if (user.UserType == UserType.Trainer)
-        {
-            var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
-            if (trainer != null)
-            {
-                trainer.User = existingUser;  // Update Trainer with existing user
-                _trainerRepository.UpdateAsync(trainer); // Ensure Trainer is updated
-            }
-        }
-        else if (user.UserType == UserType.Trainee)
-        {
-            var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
-            if (trainee != null)
-            {
-                trainee.User = existingUser;  // Update Trainee with existing user
-                _traineeRepository.UpdateAsync(trainee); // Ensure Trainee is updated
-            }
-        }
-
-        // Update the user in the repository
-        _userRepository.UpdateAsync(existingUser);
-        return await _userRepository.SaveAsync();
-    }
-
-
-    public async Task<Users> GetUserByIdAsync(int id)
-    {
-        return await _userRepository.GetByIdAsync(id);
-    }
-
-
-
-
     public async Task<UserDetailsDTO> GetUserDetailsByEmailAsync(string email)
     {
         var user = await _context.Users
@@ -210,7 +155,6 @@ public class UserService : IUserService
             UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
-            Phone = user.Phone,
             UserType = user.UserType,
             IsAdmin = user.IsAdmin
         };
@@ -240,6 +184,92 @@ public class UserService : IUserService
         return userDetails;
     }
 
+    public async Task<bool> UpdateUserAsync(
+    CreateUserDTO createUserDto,
+    TrainerDTO trainerDto = null,
+    TraineeDTO traineeDto = null,
+    List<int> batchIds = null
+)
+    {
+        // Use a separate DbContext instance for each operation
+        using (var transaction = await _userRepository.BeginTransactionAsync())
+        {
+            try
+            {
+                // Fetch user from the repository
+                var user = await _userRepository.GetByIdAsync(createUserDto.userId);
+                if (user == null)
+                {
+                    return false; // User not found
+                }
+
+
+                // Update user details
+                user.Username = createUserDto.Username;
+                user.Email = createUserDto.Email;
+                user.Phone = createUserDto.Phone;
+                user.IsAdmin = createUserDto.IsAdmin;
+
+                await _userRepository.UpdateAsync(user);
+                await _userRepository.SaveAsync();
+
+                // Handle trainer update
+                if (createUserDto.UserType == UserType.Trainer && trainerDto != null)
+                {
+                    var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
+                    if (trainer != null)
+                    {
+                        trainer.JoinedOn = trainerDto.JoinedOn;
+                        trainer.Password = trainerDto.Password;
+                        trainer.RoleId = trainerDto.RoleId;
+
+                        await _trainerRepository.UpdateAsync(trainer);
+                        await _trainerRepository.SaveAsync();
+
+                        // Remove old TrainerBatch associations
+                        var existingBatches = await _trainerBatchRepository.GetByTrainerIdAsync(trainer.TrainerId);
+                        await _trainerBatchRepository.RemoveRangeAsync(existingBatches);
+
+                        if (batchIds != null && batchIds.Any())
+                        {
+                            foreach (var batchId in batchIds)
+                            {
+                                var trainerBatch = new TrainerBatch
+                                {
+                                    Trainer_id = trainer.TrainerId,
+                                    Batch_id = batchId
+                                };
+
+                                await _trainerBatchRepository.AddAsync(trainerBatch);
+                            }
+                            await _trainerBatchRepository.SaveAsync();
+                        }
+                    }
+                }
+                // Handle trainee update
+                else if (createUserDto.UserType == UserType.Trainee && traineeDto != null)
+                {
+                    var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
+                    if (trainee != null)
+                    {
+                        trainee.JoinedOn = traineeDto.JoinedOn;
+                        trainee.BatchId = traineeDto.BatchId;
+
+                        await _traineeRepository.UpdateAsync(trainee);
+                        await _traineeRepository.SaveAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
 
 
 }
