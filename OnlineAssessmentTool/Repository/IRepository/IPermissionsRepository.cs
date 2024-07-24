@@ -7,6 +7,7 @@ namespace OnlineAssessmentTool.Repository.IRepository
 
 
         Task<bool> ExistsAsync(int id);
-        public Task<List<Permission>> GetPermissionsByNamesAsync(List<string> permissionNames);
+        Task<List<Permission>> GetPermissionsByNamesAsync(List<string> permissionNames);
+        Task<List<Permission>> GetByIdsAsync(List<int> permissionIds);
     }
 }

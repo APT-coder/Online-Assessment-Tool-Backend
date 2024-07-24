@@ -2,8 +2,9 @@
 {
     public class UpdateUserRequestDTO
     {
-        public UpdateUserDTO UpdateUser { get; set; }
-        public TrainerDTO Trainer { get; set; }
-        public TraineeDTO Trainee { get; set; }
+        public CreateUserDTO CreateUserDTO { get; set; }
+        public TrainerDTO TrainerDTO { get; set; }
+        public TraineeDTO TraineeDTO { get; set; }
+        public List<int> BatchIds { get; set; }
     }
 }

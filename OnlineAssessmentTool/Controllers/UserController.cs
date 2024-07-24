@@ -23,15 +23,17 @@ namespace OnlineAssessmentTool.Controllers
         private readonly APIContext _context;
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
-        /* private readonly ITrainerRepository _trainerRepository;
-         private readonly ITraineeRepository _traineeRepository;
- */
+        private readonly ITrainerRepository _trainerRepository;
+        private readonly ITraineeRepository _traineeRepository;
+
         private readonly IMapper _mapper;
-        public UserController(APIContext context, IUserRepository userRepository, IUserService userService)
+        public UserController(APIContext context, IUserRepository userRepository, IUserService userService, ITraineeRepository traineeRepository, ITrainerRepository trainerRepository)
         {
             _context = context;
             _userRepository = userRepository;
             _userService = userService;
+            _traineeRepository = traineeRepository;
+            _trainerRepository = trainerRepository;
         }
 
         [HttpGet("byRole/{roleName}")]
@@ -46,15 +48,7 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(users);
         }
 
-        [HttpGet("details/{email}")]
-        public async Task<IActionResult> GetUserDetails(string email)
-        {
-            var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
-            if (userDetails == null)
-                return NotFound();
 
-            return Ok(userDetails);
-        }
 
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
@@ -68,31 +62,6 @@ namespace OnlineAssessmentTool.Controllers
             return BadRequest(new { message = "User creation failed" });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users user)
-        {
-            if (id != user.UserId)
-            {
-                return BadRequest("User ID mismatch");
-            }
-
-            var existingUser = await _userService.GetUserByIdAsync(id);
-            if (existingUser == null)
-            {
-                return NotFound("User not found");
-            }
-
-            bool result = await _userService.UpdateUserAsync(user);
-
-            if (result)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return StatusCode(500, "An error occurred while updating the user");
-            }
-        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -107,5 +76,104 @@ namespace OnlineAssessmentTool.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequestDTO updateUserRequestDto)
+        {
+            if (updateUserRequestDto == null)
+            {
+                return BadRequest("Invalid user data.");
+            }
+
+            // Map CreateUserDTO to appropriate DTOs
+            var createUserDto = updateUserRequestDto.CreateUserDTO;
+
+            TrainerDTO trainerDto = null;
+            TraineeDTO traineeDto = null;
+            List<int> batchIds = updateUserRequestDto.BatchIds;
+
+            if (createUserDto.UserType == UserType.Trainer)
+            {
+                trainerDto = updateUserRequestDto.TrainerDTO;
+                // No need to manually extract batch IDs as they are already provided
+            }
+            else if (createUserDto.UserType == UserType.Trainee)
+            {
+                traineeDto = updateUserRequestDto.TraineeDTO;
+                // No batch IDs needed for trainees
+            }
+
+            var result = await _userService.UpdateUserAsync(
+                createUserDto,
+                trainerDto,
+                traineeDto,
+                batchIds
+            );
+
+            if (result)
+            {
+                return Ok(new { message = "User updated successfully." });
+            }
+            else
+            {
+                return StatusCode(500, "An error occurred while updating the user.");
+            }
+        }
+
+
+        /*  [HttpPut("{id}")]
+          public async Task<IActionResult> UpdateUser([FromBody] Users user)
+          {
+              var result = await _userService.UpdateUserAsync(user);
+
+              if (result == null)
+              {
+                  return NotFound();
+              }
+
+              // Retrieve the updated user with detailed info
+              var updatedUser = await _userService.GetUserByIdAsync(user.UserId);
+
+              if (updatedUser.UserType == UserType.Trainer)
+              {
+                  var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
+                  if (trainer != null)
+                  {
+                      return Ok(new
+                      {
+                          User = updatedUser,
+                          Trainer = trainer
+                      });
+                  }
+              }
+              else if (updatedUser.UserType == UserType.Trainee)
+              {
+                  var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
+                  if (trainee != null)
+                  {
+                      return Ok(new
+                      {
+                          User = updatedUser,
+                          Trainee = trainee
+                      });
+                  }
+              }
+
+              // Return only user details if no specific details are found
+              return Ok(updatedUser);
+          }
+    */
+        [HttpGet("details/{email}")]
+        public async Task<IActionResult> GetUserDetails(string email)
+        {
+            var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
+            if (userDetails == null)
+                return NotFound();
+
+            return Ok(userDetails);
+        }
     }
+
+
 }
+

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,12 @@ namespace OnlineAssessmentTool.Controllers
     public class RolesController : ControllerBase
     {
         private readonly IRoleRepository _roleRepository;
+        private readonly IPermissionsRepository _permissionsRepository;
 
-        public RolesController(IRoleRepository roleRepository)
+        public RolesController(IRoleRepository roleRepository, IPermissionsRepository permissionsRepository)
         {
             _roleRepository = roleRepository;
+            _permissionsRepository = permissionsRepository;
         }
 
         [HttpGet]
@@ -42,7 +45,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
         // GET: api/Roles/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse>> GetRole(int id)
@@ -60,11 +62,21 @@ namespace OnlineAssessmentTool.Controllers
                     });
                 }
 
+                // Extract permission IDs from role's permissions
+                var permissionIds = role.Permissions.Select(p => p.Id).ToList();
+
+                var roleDto = new
+                {
+                    id = role.Id,
+                    roleName = role.RoleName,
+                    permissionIds = permissionIds
+                };
+
                 return Ok(new ApiResponse
                 {
                     IsSuccess = true,
                     StatusCode = HttpStatusCode.OK,
-                    Result = role
+                    Result = roleDto
                 });
             }
             catch (Exception ex)
@@ -80,49 +92,101 @@ namespace OnlineAssessmentTool.Controllers
         }
 
 
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostRole(CreateRoleDTO createRoleDTO)
         {
             try
             {
-                if (createRoleDTO.Permissions == null || createRoleDTO.Permissions.Count == 0)
+                if (string.IsNullOrWhiteSpace(createRoleDTO.RoleName))
                 {
-                    return BadRequest(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.BadRequest, Message = new List<string> { "Role must have at least one permission." } });
+                    return BadRequest(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Message = new List<string> { "Role name is required." }
+                    });
+                }
+
+                if (createRoleDTO.PermissionIds == null || createRoleDTO.PermissionIds.Count == 0)
+                {
+                    return BadRequest(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Message = new List<string> { "Role must have at least one permission." }
+                    });
+                }
+
+                // Fetch existing permissions from the database by IDs
+                var existingPermissions = await _permissionsRepository.GetByIdsAsync(createRoleDTO.PermissionIds);
+
+                if (existingPermissions.Count != createRoleDTO.PermissionIds.Count)
+                {
+                    return BadRequest(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Message = new List<string> { "Some permissions do not exist." }
+                    });
                 }
 
                 var role = new Role
                 {
                     RoleName = createRoleDTO.RoleName,
-                    Permissions = createRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList()
+                    Permissions = existingPermissions
                 };
 
                 await _roleRepository.AddAsync(role);
 
-                return CreatedAtAction(nameof(GetRole), new { id = role.Id }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = role });
+                return CreatedAtAction(nameof(GetRole), new { id = role.Id }, new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.Created,
+                    Result = role
+                });
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating role." } });
+                // Log the exception
+                //  _logger.LogError(ex, "Error creating role.");
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error creating role." }
+                });
             }
         }
 
 
-        // PUT: api/Roles/5
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse>> PutRole(int id, UpdateRoleDTO updateRoleDTO)
+        public async Task<ActionResult<ApiResponse>> PutRole(int id, CreateRoleDTO createRoleDTO)
         {
             try
             {
                 var role = await _roleRepository.GetByIdAsync(id);
                 if (role == null)
                 {
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Role not found." } });
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Role not found." }
+                    });
                 }
 
-                role.RoleName = updateRoleDTO.RoleName;
-                role.Permissions = updateRoleDTO.Permissions.Select(p => new Permission { PermissionName = p.PermissionName, Description = p.Description }).ToList();
+                // Update role name
+                role.RoleName = createRoleDTO.RoleName;
 
+                // Fetch existing permissions from the database
+                var existingPermissions = await _permissionsRepository.GetByIdsAsync(createRoleDTO.PermissionIds);
+
+                // Update the role's permissions
+                role.Permissions = existingPermissions.ToList();
+
+                // Save changes
                 await _roleRepository.UpdateAsync(role);
 
                 return NoContent();
@@ -130,9 +194,15 @@ namespace OnlineAssessmentTool.Controllers
             catch (Exception ex)
             {
                 // Log the exception or handle it as per your application's error handling strategy
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating role." } });
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error updating role." }
+                });
             }
         }
+
 
         // DELETE: api/Roles/5
         [HttpDelete("{id}")]

@@ -27,6 +27,6 @@ namespace OnlineAssessmentTool.Models
         [Required]
         public ICollection<QuestionOption> QuestionOptions { get; set; }
         public Trainer Trainer { get; set; }
-        public TraineeAnswer TraineeAnswer { get; set; }
+        public ICollection<TraineeAnswer> TraineeAnswers { get; set; }
     }
 }

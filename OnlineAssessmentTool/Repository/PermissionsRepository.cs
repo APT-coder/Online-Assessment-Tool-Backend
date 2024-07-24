@@ -25,6 +25,10 @@ namespace OnlineAssessmentTool.Repository
                 .Where(p => permissionNames.Contains(p.PermissionName))
                 .ToListAsync();
         }
+        public async Task<List<Permission>> GetByIdsAsync(List<int> permissionIds)
+        {
+            return await _context.Permissions.Where(p => permissionIds.Contains(p.Id)).ToListAsync();
+        }
 
 
 
