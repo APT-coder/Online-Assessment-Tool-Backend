@@ -140,6 +140,7 @@ namespace OnlineAssessmentTool.Repository
                           } into g
                           select new AssessmentOverviewDTO
                           {
+                              AssessmentId = g.Key.AssessmentId,
                               AssessmentName = g.Key.AssessmentName,
                               Date = g.Key.ScheduledDate,
                               Trainer = g.Key.Trainer,
