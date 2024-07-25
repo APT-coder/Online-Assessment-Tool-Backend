@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace OnlineAssessmentTool.Models.DTO
+﻿namespace OnlineAssessmentTool.Models.DTO
 {
     public class ScheduledAssessmentDTO
     {
@@ -11,16 +9,11 @@ namespace OnlineAssessmentTool.Models.DTO
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public DateTime StartTime { get; set; }
-
         public DateTime EndTime { get; set; }
         public AssessmentStatus Status { get; set; }
-
         public bool CanRandomizeQuestion { get; set; }
         public bool CanDisplayResult { get; set; }
         public bool CanSubmitBeforeEnd { get; set; }
     }
-
-
-
 }
 

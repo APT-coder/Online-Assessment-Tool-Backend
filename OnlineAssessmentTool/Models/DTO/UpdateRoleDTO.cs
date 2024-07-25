@@ -1,6 +1,4 @@
-﻿using OnlineAssessmentTool.Models.DTO;
-
-namespace OnlineAssessmentTool.Models.DTO
+﻿namespace OnlineAssessmentTool.Models.DTO
 {
     public class UpdateRoleDTO
     {

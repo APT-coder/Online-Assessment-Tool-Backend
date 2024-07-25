@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
-using System.Data;
 using System.Globalization;
 using System.Net;
 
@@ -15,11 +12,7 @@ namespace OnlineAssessmentTool.Controllers
     [ApiController]
     public class ScheduledAssessmentController : ControllerBase
     {
-
-
-
         private readonly IScheduledAssessmentRepository _scheduledAssessmentRepository;
-
         public ScheduledAssessmentController(IScheduledAssessmentRepository scheduledAssessmentRepository)
         {
             _scheduledAssessmentRepository = scheduledAssessmentRepository;
@@ -47,7 +40,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -78,8 +70,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-
-
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -95,7 +85,6 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                // Explicitly cast the Status from DTO to the model's Status enum
                 if (!TimeSpan.TryParseExact(scheduledAssessmentDTO.AssessmentDuration, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out var assessmentDuration))
                 {
                     return BadRequest(new ApiResponse
@@ -105,10 +94,6 @@ namespace OnlineAssessmentTool.Controllers
                         Message = new List<string> { "Invalid format for AssessmentDuration. Expected format is 'hh:mm:ss'." }
                     });
                 }
-
-
-
-
 
                 var scheduledAssessment = new ScheduledAssessment
                 {
@@ -120,25 +105,17 @@ namespace OnlineAssessmentTool.Controllers
                     EndDate = scheduledAssessmentDTO.EndDate,
                     StartTime = scheduledAssessmentDTO.StartTime,
                     EndTime = scheduledAssessmentDTO.EndTime,
-                    Status = scheduledAssessmentDTO.Status,// Cast the enum type here
+                    Status = scheduledAssessmentDTO.Status,
                     CanRandomizeQuestion = scheduledAssessmentDTO.CanRandomizeQuestion,
                     CanDisplayResult = scheduledAssessmentDTO.CanDisplayResult,
                     CanSubmitBeforeEnd = scheduledAssessmentDTO.CanSubmitBeforeEnd
                 };
 
-
-
-
-
-
-
                 await _scheduledAssessmentRepository.AddAsync(scheduledAssessment);
-
                 return CreatedAtAction(nameof(GetScheduledAssessment), new { id = scheduledAssessment.ScheduledAssessmentId }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = scheduledAssessment });
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating scheduled assessment." } });
             }
         }
@@ -160,7 +137,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting assessment." } });
             }
         }
@@ -177,7 +153,6 @@ namespace OnlineAssessmentTool.Controllers
                     return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Assessment not found." } });
                 }
 
-                // Convert string to TimeSpan
                 if (!TimeSpan.TryParseExact(scheduledAssessmentDTO.AssessmentDuration, @"hh\:mm\:ss", CultureInfo.InvariantCulture, out var assessmentDuration))
                 {
                     return BadRequest(new ApiResponse
@@ -196,26 +171,17 @@ namespace OnlineAssessmentTool.Controllers
                 scheduledAssessment.EndDate = scheduledAssessmentDTO.EndDate;
                 scheduledAssessment.StartTime = scheduledAssessmentDTO.StartTime;
                 scheduledAssessment.EndTime = scheduledAssessmentDTO.EndTime;
-                scheduledAssessment.Status = scheduledAssessmentDTO.Status;// Cast the enum type here
+                scheduledAssessment.Status = scheduledAssessmentDTO.Status;
                 scheduledAssessment.CanRandomizeQuestion = scheduledAssessmentDTO.CanRandomizeQuestion;
                 scheduledAssessment.CanDisplayResult = scheduledAssessmentDTO.CanDisplayResult;
                 scheduledAssessment.CanSubmitBeforeEnd = scheduledAssessmentDTO.CanSubmitBeforeEnd;
-
-
                 await _scheduledAssessmentRepository.UpdateAsync(scheduledAssessment);
-
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating assessment." } });
             }
         }
-
-
-
-
-
     }
 }

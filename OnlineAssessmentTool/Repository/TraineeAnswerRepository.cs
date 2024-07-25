@@ -24,6 +24,5 @@ namespace OnlineAssessmentTool.Repository
             _context.TraineeAnswers.Update(traineeAnswer);
             await _context.SaveChangesAsync();
         }
-
     }
 }

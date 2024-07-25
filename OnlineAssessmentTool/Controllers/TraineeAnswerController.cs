@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
-using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
 
@@ -12,12 +11,10 @@ namespace OnlineAssessmentTool.Controllers
     public class TraineeAnswerController : ControllerBase
     {
         private readonly ITraineeAnswerRepository _traineeAnswerRepository;
-
         public TraineeAnswerController(ITraineeAnswerRepository traineeAnswerRepository)
         {
             _traineeAnswerRepository = traineeAnswerRepository;
         }
-
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TraineeAnswer>>> GetTraineeAnswer()
@@ -50,16 +47,11 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
-
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostTraineeAnswer([FromBody] TraineeAnswerDTO traineeAnswerDTO)
         {
             try
             {
-
-
-
                 var traineeAnswer = new TraineeAnswer
                 {
                     ScheduledAssessmentId = traineeAnswerDTO.ScheduledAssessmentId,
@@ -70,23 +62,14 @@ namespace OnlineAssessmentTool.Controllers
                     Score = traineeAnswerDTO.Score
                 };
 
-
-
-
-
-
-
                 await _traineeAnswerRepository.AddAsync(traineeAnswer);
-
                 return CreatedAtAction(nameof(GetTraineeAnswer), new { id = traineeAnswer.TraineeAnswerId }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = traineeAnswer });
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating answer." } });
             }
         }
-
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeleteTraineeAnswer(int id)
@@ -100,17 +83,13 @@ namespace OnlineAssessmentTool.Controllers
                 }
 
                 await _traineeAnswerRepository.DeleteAsync(traineeAnswer);
-
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting answer." } });
             }
         }
-
-
 
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> PutTraineeAnswer(int id, TraineeAnswerDTO traineeAnswerDTO)
@@ -129,16 +108,11 @@ namespace OnlineAssessmentTool.Controllers
                 traineeAnswer.Answer = traineeAnswerDTO.Answer;
                 traineeAnswer.IsCorrect = traineeAnswerDTO.IsCorrect;
                 traineeAnswer.Score = traineeAnswerDTO.Score;
-
-
-
                 await _traineeAnswerRepository.UpdateAsync(traineeAnswer);
-
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating answer." } });
             }
         }
@@ -146,7 +120,6 @@ namespace OnlineAssessmentTool.Controllers
         [HttpPut("updateScore")]
         public async Task<IActionResult> UpdateScore([FromBody] UpdateScoreDTO updateScoreDTO)
         {
-
             try
             {
                 var traineeAnswer = await _traineeAnswerRepository.GetTraineeAnswerAsync(updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
@@ -163,13 +136,10 @@ namespace OnlineAssessmentTool.Controllers
 
                 traineeAnswer.Score = updateScoreDTO.Score;
                 await _traineeAnswerRepository.UpdateTraineeAnswerAsync(traineeAnswer);
-
                 return Ok(traineeAnswer);
             }
             catch (Exception ex)
             {
-
-
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -177,7 +147,6 @@ namespace OnlineAssessmentTool.Controllers
                     Message = new List<string> { "An error occurred while trying to update the score." }
                 });
             }
-
         }
     }
 }

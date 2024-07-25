@@ -3,12 +3,9 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
-using OnlineAssessmentTool.Repository;
 
 namespace OnlineAssessmentTool.Controllers
 {
-
-
     [Route("[controller]/[action]")]
     [ApiController]
     public class AssessmentScoreController : Controller
@@ -138,6 +135,5 @@ namespace OnlineAssessmentTool.Controllers
 
             return Ok(response);
         }
-
     }
 }

@@ -15,8 +15,6 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly APIContext _context;
 
-
-
     public UserService(
         IUserRepository userRepository,
         ITrainerRepository trainerRepository,
@@ -39,12 +37,10 @@ public class UserService : IUserService
         {
             try
             {
-                // Map CreateUserDTO to Users entity
                 var user = _mapper.Map<Users>(createUserDto);
                 await _userRepository.AddAsync(user);
                 await _userRepository.SaveAsync();
 
-                // Handle trainer creation
                 if (user.UserType == UserType.Trainer && trainerDto != null)
                 {
                     var trainer = _mapper.Map<Trainer>(trainerDto);
@@ -52,7 +48,6 @@ public class UserService : IUserService
                     await _trainerRepository.AddAsync(trainer);
                     await _trainerRepository.SaveAsync();
 
-                    // Handle batch associations
                     if (batchIds != null && batchIds.Any())
                     {
                         foreach (var batchId in batchIds)
@@ -68,7 +63,6 @@ public class UserService : IUserService
                         await _trainerBatchRepository.SaveAsync();
                     }
                 }
-                // Handle trainee creation
                 else if (user.UserType == UserType.Trainee && traineeDto != null)
                 {
                     var trainee = _mapper.Map<Trainee>(traineeDto);
@@ -88,7 +82,6 @@ public class UserService : IUserService
         }
     }
 
-
     public async Task<List<Users>> GetUsersByRoleNameAsync(string roleName)
     {
         var lowerRoleName = roleName.ToLower();
@@ -102,9 +95,6 @@ public class UserService : IUserService
         return await query.ToListAsync();
     }
 
-
-
-
     public async Task DeleteUserAsync(int userId)
     {
         var user = await _context.Users.FindAsync(userId);
@@ -115,7 +105,6 @@ public class UserService : IUserService
 
         var userType = user.UserType;
 
-        // If the user is a Trainer, delete associated Trainer and TrainerBatches records
         if (userType == UserType.Trainer)
         {
             var trainer = await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == userId);
@@ -127,7 +116,6 @@ public class UserService : IUserService
             }
         }
 
-        // If the user is a Trainee, delete the associated Trainee record
         if (userType == UserType.Trainee)
         {
             var trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.UserId == userId);
@@ -137,7 +125,6 @@ public class UserService : IUserService
             }
         }
 
-        // Finally, delete the User record
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
@@ -191,20 +178,16 @@ public class UserService : IUserService
     List<int> batchIds = null
 )
     {
-        // Use a separate DbContext instance for each operation
         using (var transaction = await _userRepository.BeginTransactionAsync())
         {
             try
             {
-                // Fetch user from the repository
                 var user = await _userRepository.GetByIdAsync(createUserDto.userId);
                 if (user == null)
                 {
-                    return false; // User not found
+                    return false;
                 }
 
-
-                // Update user details
                 user.Username = createUserDto.Username;
                 user.Email = createUserDto.Email;
                 user.Phone = createUserDto.Phone;
@@ -213,7 +196,6 @@ public class UserService : IUserService
                 await _userRepository.UpdateAsync(user);
                 await _userRepository.SaveAsync();
 
-                // Handle trainer update
                 if (createUserDto.UserType == UserType.Trainer && trainerDto != null)
                 {
                     var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
@@ -226,7 +208,6 @@ public class UserService : IUserService
                         await _trainerRepository.UpdateAsync(trainer);
                         await _trainerRepository.SaveAsync();
 
-                        // Remove old TrainerBatch associations
                         var existingBatches = await _trainerBatchRepository.GetByTrainerIdAsync(trainer.TrainerId);
                         await _trainerBatchRepository.RemoveRangeAsync(existingBatches);
 
@@ -246,7 +227,6 @@ public class UserService : IUserService
                         }
                     }
                 }
-                // Handle trainee update
                 else if (createUserDto.UserType == UserType.Trainee && traineeDto != null)
                 {
                     var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
@@ -270,8 +250,6 @@ public class UserService : IUserService
             }
         }
     }
-
-
 }
 
 

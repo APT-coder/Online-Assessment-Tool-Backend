@@ -1,17 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using AutoMapper;
-using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
@@ -25,7 +17,6 @@ namespace OnlineAssessmentTool.Controllers
         private readonly IUserService _userService;
         private readonly ITrainerRepository _trainerRepository;
         private readonly ITraineeRepository _traineeRepository;
-
         private readonly IMapper _mapper;
         public UserController(APIContext context, IUserRepository userRepository, IUserService userService, ITraineeRepository traineeRepository, ITrainerRepository trainerRepository)
         {
@@ -48,8 +39,6 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(users);
         }
 
-
-
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
         {
@@ -69,7 +58,7 @@ namespace OnlineAssessmentTool.Controllers
             try
             {
                 await _userService.DeleteUserAsync(id);
-                return NoContent(); // Returns 204 No Content
+                return NoContent();
             }
             catch (Exception ex)
             {
@@ -85,7 +74,6 @@ namespace OnlineAssessmentTool.Controllers
                 return BadRequest("Invalid user data.");
             }
 
-            // Map CreateUserDTO to appropriate DTOs
             var createUserDto = updateUserRequestDto.CreateUserDTO;
 
             TrainerDTO trainerDto = null;
@@ -95,12 +83,10 @@ namespace OnlineAssessmentTool.Controllers
             if (createUserDto.UserType == UserType.Trainer)
             {
                 trainerDto = updateUserRequestDto.TrainerDTO;
-                // No need to manually extract batch IDs as they are already provided
             }
             else if (createUserDto.UserType == UserType.Trainee)
             {
                 traineeDto = updateUserRequestDto.TraineeDTO;
-                // No batch IDs needed for trainees
             }
 
             var result = await _userService.UpdateUserAsync(
@@ -120,49 +106,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
-        /*  [HttpPut("{id}")]
-          public async Task<IActionResult> UpdateUser([FromBody] Users user)
-          {
-              var result = await _userService.UpdateUserAsync(user);
-
-              if (result == null)
-              {
-                  return NotFound();
-              }
-
-              // Retrieve the updated user with detailed info
-              var updatedUser = await _userService.GetUserByIdAsync(user.UserId);
-
-              if (updatedUser.UserType == UserType.Trainer)
-              {
-                  var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
-                  if (trainer != null)
-                  {
-                      return Ok(new
-                      {
-                          User = updatedUser,
-                          Trainer = trainer
-                      });
-                  }
-              }
-              else if (updatedUser.UserType == UserType.Trainee)
-              {
-                  var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
-                  if (trainee != null)
-                  {
-                      return Ok(new
-                      {
-                          User = updatedUser,
-                          Trainee = trainee
-                      });
-                  }
-              }
-
-              // Return only user details if no specific details are found
-              return Ok(updatedUser);
-          }
-    */
         [HttpGet("details/{email}")]
         public async Task<IActionResult> GetUserDetails(string email)
         {
@@ -173,7 +116,5 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(userDetails);
         }
     }
-
-
 }
 

@@ -6,7 +6,6 @@
         public string Email { get; set; }
         public string Phone { get; set; }
         public bool IsAdmin { get; set; }
-
         public UserType UserType { get; set; }
 
     }

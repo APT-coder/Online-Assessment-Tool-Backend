@@ -1,7 +1,4 @@
-﻿using OnlineAssessmentTool.Models.DTO;
-using System.Collections.Generic;
-
-namespace OnlineAssessmentTool.Models.DTO
+﻿namespace OnlineAssessmentTool.Models.DTO
 {
     public class CreateRoleDTO
     {

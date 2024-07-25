@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Collections.Generic;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
-using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Models;
 
 namespace OnlineAssessmentTool.Controllers
@@ -51,8 +48,6 @@ namespace OnlineAssessmentTool.Controllers
                 var user = await _userService.GetUserDetailsByEmailAsync(upn);
                 if (user != null)
                 {
-
-
                     results.Add("appName", appName);
                     results.Add("UserId", user.UserId);
                     results.Add("UserName", user.Username);
@@ -62,12 +57,14 @@ namespace OnlineAssessmentTool.Controllers
                     results.Add("UserType", user.UserType);
                     if(user.UserType == UserType.Trainer)
                     {
+                        results.Add("TrainerId", user.Trainer.TrainerId);
                         results.Add("UserBatch", user.Trainer.TrainerBatch);
                         results.Add("UserRole", user.Trainer.Role);
                         results.Add("UserPermissions", user.Trainer.Role.Permissions);
                     }
                     else if(user.UserType == UserType.Trainee)
                     {
+                        results.Add("TraineeId", user.Trainee.TraineeId);
                         results.Add("UserBatch", user.Trainee.Batch);
                     }
 

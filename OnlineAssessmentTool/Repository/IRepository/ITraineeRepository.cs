@@ -6,6 +6,4 @@ namespace OnlineAssessmentTool.Repository.IRepository
     {
         public Task<Trainee> GetByUserIdAsync(int userId);
     }
-
-
 }

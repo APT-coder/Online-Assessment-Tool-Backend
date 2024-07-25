@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Models.DTO;
@@ -19,7 +17,6 @@ namespace OnlineAssessmentTool.Controllers
             _permissionRepository = permissionRepository;
         }
 
-        // GET: api/Permission
         [HttpGet]
         public async Task<ActionResult<ApiResponse>> GetAllPermissions()
         {
@@ -34,7 +31,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        // GET: api/Permission/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse>> GetPermission(int id)
         {
@@ -55,7 +51,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        // POST: api/Permission
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreatePermission(CreatePermissionDTO createPermissionDto)
         {
@@ -90,8 +85,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
-        // PUT: api/Permission/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> UpdatePermission(int id, UpdatePermissionDTO updatePermissionDto)
         {
@@ -109,7 +102,6 @@ namespace OnlineAssessmentTool.Controllers
                     return NotFound(new ApiResponse { IsSuccess = false, Message = new List<string> { "Permission not found" }, StatusCode = HttpStatusCode.NotFound });
                 }
 
-                // Update the properties
                 existingPermission.PermissionName = updatePermissionDto.PermissionName;
                 existingPermission.Description = updatePermissionDto.Description;
 
@@ -123,7 +115,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        // DELETE: api/Permission/{id}
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeletePermission(int id)
         {

@@ -8,14 +8,10 @@ namespace OnlineAssessmentTool.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int batchid { get; set; }
-
         [Required]
         [StringLength(100)]
         public string batchname { get; set; }
-
-
         public ICollection<Trainee> Trainees { get; set; }
-
         public List<TrainerBatch> TrainerBatch { get; set; }
     }
 }

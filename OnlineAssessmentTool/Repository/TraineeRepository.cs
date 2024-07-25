@@ -9,7 +9,9 @@ namespace OnlineAssessmentTool.Repository
     {
         public TraineeRepository(APIContext context) : base(context)
         {
+
         }
+
         public async Task<Trainee> GetByUserIdAsync(int userId)
         {
             return await _context.Trainees

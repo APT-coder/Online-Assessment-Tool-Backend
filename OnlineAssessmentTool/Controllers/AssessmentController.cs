@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Models;
 using AutoMapper;
 using System.Net;
 using OnlineAssessmentTool.Repository.IRepository;
-using OnlineAssessmentTool.Repository;
 
 namespace OnlineAssessmentTool.Controllers
 {

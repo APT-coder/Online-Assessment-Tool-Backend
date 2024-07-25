@@ -11,7 +11,7 @@ namespace OnlineAssessmentTool.Repository
         {
 
         }
-        // Example method to get batches by Trainer ID
+
         public async Task<IEnumerable<TrainerBatch>> GetByTrainerIdAsync(int trainerId)
         {
             return await _context.TrainerBatches
@@ -23,7 +23,5 @@ namespace OnlineAssessmentTool.Repository
             _context.RemoveRange(entities);
             await _context.SaveChangesAsync();
         }
-
-
     }
 }

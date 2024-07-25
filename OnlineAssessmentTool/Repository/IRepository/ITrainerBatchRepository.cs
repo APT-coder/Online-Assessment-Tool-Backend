@@ -7,5 +7,4 @@ namespace OnlineAssessmentTool.Repository.IRepository
         public Task<IEnumerable<TrainerBatch>> GetByTrainerIdAsync(int trainerId);
         Task RemoveRangeAsync(IEnumerable<TrainerBatch> entities);
     }
-
 }

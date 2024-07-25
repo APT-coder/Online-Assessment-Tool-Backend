@@ -2,8 +2,6 @@
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using AutoMapper;
-using System.Threading.Tasks;
-using OnlineAssessmentTool.Repository;
 
 public class QuestionService : IQuestionService
 {
@@ -49,40 +47,31 @@ public class QuestionService : IQuestionService
 
         if (existingQuestion != null)
         {
-            // Update question properties
             existingQuestion.QuestionText = questionDTO.QuestionText;
             existingQuestion.QuestionType = questionDTO.QuestionType;
             existingQuestion.Points = questionDTO.Points;
 
-            // Get existing options
             var existingOptions = existingQuestion.QuestionOptions.ToList();
 
-            // Update existing options or add new ones
             foreach (var dtoOption in questionDTO.QuestionOptions)
             {
 
                 var optionId = existingQuestion.QuestionOptions.FirstOrDefault()?.QuestionOptionId;
-                var existingOption = existingOptions.FirstOrDefault(o => o.QuestionOptionId == optionId); // Adjust this condition as needed
+                var existingOption = existingOptions.FirstOrDefault(o => o.QuestionOptionId == optionId);
 
-
-                // Update existing option properties
                 existingOption.Option1 = dtoOption.Option1;
                 existingOption.Option2 = dtoOption.Option2;
                 existingOption.Option3 = dtoOption.Option3;
                 existingOption.Option4 = dtoOption.Option4;
                 existingOption.CorrectAnswer = dtoOption.CorrectAnswer;
-
             }
 
             await _questionRepository.UpdateQuestionAsync(existingQuestion);
             await _questionRepository.SaveAsync();
             return existingQuestion;
         }
-
         return null;
     }
-
-
 
     public async Task DeleteQuestionAsync(int questionId)
     {

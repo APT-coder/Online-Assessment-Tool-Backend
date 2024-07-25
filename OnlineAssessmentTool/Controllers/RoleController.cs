@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -40,12 +35,10 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving roles from database." } });
             }
         }
 
-        // GET: api/Roles/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse>> GetRole(int id)
         {
@@ -62,7 +55,6 @@ namespace OnlineAssessmentTool.Controllers
                     });
                 }
 
-                // Extract permission IDs from role's permissions
                 var permissionIds = role.Permissions.Select(p => p.Id).ToList();
 
                 var roleDto = new
@@ -81,7 +73,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -90,8 +81,6 @@ namespace OnlineAssessmentTool.Controllers
                 });
             }
         }
-
-
 
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostRole(CreateRoleDTO createRoleDTO)
@@ -118,7 +107,6 @@ namespace OnlineAssessmentTool.Controllers
                     });
                 }
 
-                // Fetch existing permissions from the database by IDs
                 var existingPermissions = await _permissionsRepository.GetByIdsAsync(createRoleDTO.PermissionIds);
 
                 if (existingPermissions.Count != createRoleDTO.PermissionIds.Count)
@@ -148,9 +136,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception
-                //  _logger.LogError(ex, "Error creating role.");
-
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -159,7 +144,6 @@ namespace OnlineAssessmentTool.Controllers
                 });
             }
         }
-
 
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> PutRole(int id, CreateRoleDTO createRoleDTO)
@@ -177,23 +161,14 @@ namespace OnlineAssessmentTool.Controllers
                     });
                 }
 
-                // Update role name
                 role.RoleName = createRoleDTO.RoleName;
-
-                // Fetch existing permissions from the database
                 var existingPermissions = await _permissionsRepository.GetByIdsAsync(createRoleDTO.PermissionIds);
-
-                // Update the role's permissions
                 role.Permissions = existingPermissions.ToList();
-
-                // Save changes
                 await _roleRepository.UpdateAsync(role);
-
                 return NoContent();
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -203,8 +178,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-
-        // DELETE: api/Roles/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeleteRole(int id)
         {
@@ -222,7 +195,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception or handle it as per your application's error handling strategy
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting role." } });
             }
         }

@@ -3,10 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Models.DTO;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using AutoMapper;
 
 namespace OnlineAssessmentTool.Controllers
@@ -24,7 +21,6 @@ namespace OnlineAssessmentTool.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/Batch
         [HttpGet]
         public async Task<ActionResult<ApiResponse>> GetBatches()
         {
@@ -39,7 +35,6 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(response);
         }
 
-        // GET: api/Batch/{id}
         [HttpGet("{id:int}")]
         public async Task<ActionResult<ApiResponse>> GetBatch(int id)
         {
@@ -60,7 +55,6 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(response);
         }
 
-        // POST: api/Batch
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateBatch([FromBody] CreateBatchDTO createbatchDTO)
         {
@@ -85,7 +79,7 @@ namespace OnlineAssessmentTool.Controllers
                 {
                     IsSuccess = true,
                     StatusCode = HttpStatusCode.Created,
-                    Result = _mapper.Map<CreateBatchDTO>(batch), // Assuming BatchDTO is used for response
+                    Result = _mapper.Map<CreateBatchDTO>(batch),
                     Message = { "Batch created successfully" }
                 };
 
@@ -93,7 +87,6 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
             {
-                // Handle specific PostgreSQL duplicate key violation error
                 return Conflict(new ApiResponse
                 {
                     IsSuccess = false,
@@ -104,7 +97,6 @@ namespace OnlineAssessmentTool.Controllers
 
         }
 
-        // PUT: api/Batch/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBatch(int id, [FromBody] UpdateBatchDTO batchDTO)
         {
@@ -149,7 +141,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        // DELETE: api/Batch/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteBatch(int id)
         {
