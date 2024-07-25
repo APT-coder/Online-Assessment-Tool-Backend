@@ -128,7 +128,7 @@ namespace OnlineAssessmentTool.Repository
         {
             return await (from sa in _context.ScheduledAssessments
                           join a in _context.Assessments on sa.AssessmentId equals a.AssessmentId
-                          join t in _context.Trainers on a.CreatedBy equals t.UserId
+                          join t in _context.Trainers on a.CreatedBy equals t.TrainerId
                           join u in _context.Users on t.UserId equals u.UserId
                           join b in _context.batch on sa.BatchId equals b.batchid // Join with Batch to get batch name
                           group new { sa, a, t, u, b } by new

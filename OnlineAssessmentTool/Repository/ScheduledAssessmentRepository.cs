@@ -15,15 +15,19 @@ namespace OnlineAssessmentTool.Repository
 
         public async Task<int> GetStudentCountByAssessmentIdAsync(int assessmentId)
         {
-            return await _context.ScheduledAssessments
+            var batchIds = await _context.ScheduledAssessments
                 .Where(sa => sa.AssessmentId == assessmentId)
-                .GroupBy(sa => sa.BatchId)
-                .Select(g => new
-                {
-                    BatchId = g.Key,
-                    StudentCount = g.Count() // Count of students in each batch
-                })
-                .SumAsync(x => x.StudentCount); // Sum the counts for the given assessment
+                .Select(sa => sa.BatchId)
+                .Distinct()
+                .ToListAsync();
+
+            // Get the total number of students in those batches
+            var totalStudents = await _context.batch
+                .Where(b => batchIds.Contains(b.batchid))
+                .SelectMany(b => b.Trainees)
+                .CountAsync();
+
+            return totalStudents;
 
         }
 
