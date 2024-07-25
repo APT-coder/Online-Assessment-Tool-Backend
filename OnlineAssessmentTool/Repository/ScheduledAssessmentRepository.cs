@@ -1,4 +1,5 @@
-﻿using OnlineAssessmentTool.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 
@@ -11,11 +12,24 @@ namespace OnlineAssessmentTool.Repository
 
 
         }
-        /*
-                public async Task AddAsync(ScheduledAssessment scheduledAssessment)
+
+        public async Task<int> GetStudentCountByAssessmentIdAsync(int assessmentId)
+        {
+            return await _context.ScheduledAssessments
+                .Where(sa => sa.AssessmentId == assessmentId)
+                .GroupBy(sa => sa.BatchId)
+                .Select(g => new
                 {
-                    _context.ScheduledAssessments.Add(scheduledAssessment);
-                    await _context.SaveChangesAsync();
-                }*/
+                    BatchId = g.Key,
+                    StudentCount = g.Count() // Count of students in each batch
+                })
+                .SumAsync(x => x.StudentCount); // Sum the counts for the given assessment
+
+        }
+
+
+
+
     }
 }
+

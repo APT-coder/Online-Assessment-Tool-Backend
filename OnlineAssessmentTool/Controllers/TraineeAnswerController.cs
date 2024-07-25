@@ -143,5 +143,41 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpPut("updateScore")]
+        public async Task<IActionResult> UpdateScore([FromBody] UpdateScoreDTO updateScoreDTO)
+        {
+
+            try
+            {
+                var traineeAnswer = await _traineeAnswerRepository.GetTraineeAnswerAsync(updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
+
+                if (traineeAnswer == null)
+                {
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "TraineeAnswer not found." }
+                    });
+                }
+
+                traineeAnswer.Score = updateScoreDTO.Score;
+                await _traineeAnswerRepository.UpdateTraineeAnswerAsync(traineeAnswer);
+
+                return Ok(traineeAnswer);
+            }
+            catch (Exception ex)
+            {
+
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "An error occurred while trying to update the score." }
+                });
+            }
+
+        }
     }
 }

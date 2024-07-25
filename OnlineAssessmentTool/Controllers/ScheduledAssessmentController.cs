@@ -57,6 +57,38 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpGet("studentcount")]
+        public async Task<ActionResult<int>> GetStudentCountByAssessment([FromQuery] int assessmentId)
+        {
+            try
+            {
+                int studentCount = await _scheduledAssessmentRepository.GetStudentCountByAssessmentIdAsync(assessmentId);
+
+                if (studentCount == 0)
+                {
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "No students found for the specified assessment." }
+                    });
+                }
+
+                return Ok(studentCount);
+            }
+            catch (Exception ex)
+            {
+
+
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "An error occurred while retrieving the student count." }
+                });
+            }
+        }
+
 
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostScheduledAssessment([FromBody] ScheduledAssessmentDTO scheduledAssessmentDTO)

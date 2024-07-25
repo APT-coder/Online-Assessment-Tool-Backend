@@ -6,9 +6,6 @@
         public string AssessmentName { get; set; }
         public DateTime Date { get; set; }
         public string Trainer { get; set; }
-        public int NumberOfAttendees { get; set; }
-        public int MaximumScore { get; set; }
-        public int HighestScore { get; set; }
-        public int LowestScore { get; set; }
+        public string BatchName { get; set; }
     }
 }

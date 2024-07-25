@@ -130,13 +130,14 @@ namespace OnlineAssessmentTool.Repository
                           join a in _context.Assessments on sa.AssessmentId equals a.AssessmentId
                           join t in _context.Trainers on a.CreatedBy equals t.UserId
                           join u in _context.Users on t.UserId equals u.UserId
-                          join ats in _context.AssessmentScores on sa.ScheduledAssessmentId equals ats.ScheduledAssessmentId
-                          group new { sa, a, t, u, ats } by new
+                          join b in _context.batch on sa.BatchId equals b.batchid // Join with Batch to get batch name
+                          group new { sa, a, t, u, b } by new
                           {
                               sa.AssessmentId,
                               a.AssessmentName,
                               sa.ScheduledDate,
-                              Trainer = u.Username
+                              Trainer = u.Username,
+                              BatchName = b.batchname // Group by BatchName
                           } into g
                           select new AssessmentOverviewDTO
                           {
@@ -144,13 +145,9 @@ namespace OnlineAssessmentTool.Repository
                               AssessmentName = g.Key.AssessmentName,
                               Date = g.Key.ScheduledDate,
                               Trainer = g.Key.Trainer,
-                              NumberOfAttendees = g.Count(),
-                              MaximumScore = 100, // Replace with a value from the database if applicable
-                              HighestScore = g.Max(x => x.ats.AvergeScore),
-                              LowestScore = g.Min(x => x.ats.AvergeScore)
+                              BatchName = g.Key.BatchName // Correctly map BatchName
                           }).ToListAsync();
         }
-
 
         public async Task<IEnumerable<TraineeScoreDTO>> GetLowPerformersByAssessmentIdAsync(int scheduledAssessmentId)
         {
