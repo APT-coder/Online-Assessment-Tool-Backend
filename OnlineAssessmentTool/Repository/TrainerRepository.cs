@@ -17,5 +17,12 @@ namespace OnlineAssessmentTool.Repository
                 .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
         }
+        public async Task<List<string>> GetAllTrainersAsync()
+        {
+            return await _context.Trainers
+                .Include(t => t.User)
+                .Select(t => t.User.Username)
+                .ToListAsync();
+        }
     }
 }
