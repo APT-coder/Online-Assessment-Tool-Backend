@@ -49,6 +49,31 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetScheduledByUserId(int userId)
+        {
+            var scheduled = await _scheduledAssessmentRepository.GetScheduledAssessmentsByUserIdAsync(userId);
+
+            if (scheduled == null)
+            {
+                return NotFound(new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.NotFound,
+                    Message = { "Question not found." }
+                });
+            }
+
+            var response = new ApiResponse
+            {
+                IsSuccess = true,
+                StatusCode = HttpStatusCode.OK,
+                Result = scheduled
+            };
+
+            return Ok(response);
+        }
+
         [HttpGet("studentcount")]
         public async Task<ActionResult<int>> GetStudentCountByAssessment([FromQuery] int assessmentId)
         {

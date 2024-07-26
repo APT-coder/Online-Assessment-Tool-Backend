@@ -2,6 +2,7 @@
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
+using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
 using System.Text.Json.Serialization;
 
@@ -48,6 +49,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IScheduledAssessmentRepository, ScheduledAssessmentRepository>();
             services.AddScoped<ITraineeAnswerRepository, TraineeAnswerRepository>();
             services.AddScoped<IAssessmentScoreRepository, AssessmentScoreRepository>();
+            services.AddScoped<IAssessmentPostService, AssessmentPostService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
 

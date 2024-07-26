@@ -3,6 +3,7 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
+using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -11,9 +12,12 @@ namespace OnlineAssessmentTool.Controllers
     public class TraineeAnswerController : ControllerBase
     {
         private readonly ITraineeAnswerRepository _traineeAnswerRepository;
-        public TraineeAnswerController(ITraineeAnswerRepository traineeAnswerRepository)
+        private readonly IAssessmentPostService _assessmentPostService;
+
+        public TraineeAnswerController(ITraineeAnswerRepository traineeAnswerRepository, IAssessmentPostService assessmentPostService)
         {
             _traineeAnswerRepository = traineeAnswerRepository;
+            _assessmentPostService = assessmentPostService;
         }
 
         [HttpGet]
@@ -45,6 +49,14 @@ namespace OnlineAssessmentTool.Controllers
                     Message = new List<string> { "Error retrieving answer from database." }
                 });
             }
+        }
+
+        [HttpPost("{userId}")]
+        public async Task<IActionResult> AssessmentSubmit([FromBody] List<PostAssessmentDTO> questions, int userId)
+        {
+
+            var traineeAnswer = await _assessmentPostService.ProcessTraineeAnswers(questions, userId);
+            return Ok();
         }
 
         [HttpPost]
