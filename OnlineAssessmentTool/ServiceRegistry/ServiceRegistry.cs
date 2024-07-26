@@ -47,8 +47,10 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IAssessmentService, AssessmentService>();
             services.AddScoped<IQuestionService, QuestionService>();
             services.AddScoped<IScheduledAssessmentRepository, ScheduledAssessmentRepository>();
+            services.AddScoped<IScheduledAssessmentService, ScheduledAssessmentService>();
             services.AddScoped<ITraineeAnswerRepository, TraineeAnswerRepository>();
             services.AddScoped<IAssessmentScoreRepository, AssessmentScoreRepository>();
+            services.AddScoped<IAssessmentScoreService, AssessmentScoreService>();
             services.AddScoped<IAssessmentPostService, AssessmentPostService>();
 
             services.AddAutoMapper(typeof(MappingConfig));

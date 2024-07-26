@@ -22,5 +22,33 @@ namespace OnlineAssessmentTool.Repository
                                       .ToListAsync();
             return assessmentScores;
         }
+
+        public async Task<AssessmentScore> GetByScheduledAssessmentAndTraineeAsync(int scheduledAssessmentId, int traineeId)
+        {
+            return await _context.AssessmentScores
+                .FirstOrDefaultAsync(a => a.ScheduledAssessmentId == scheduledAssessmentId && a.TraineeId == traineeId);
+        }
+
+        public async Task UpdateAssessmentScoresAsync(List<AssessmentScoreDTO> assessmentScoreDTOs)
+        {
+            foreach (var assessmentScoreDTO in assessmentScoreDTOs)
+            {
+                var assessmentScore = await GetByScheduledAssessmentAndTraineeAsync(assessmentScoreDTO.ScheduledAssessmentId, assessmentScoreDTO.TraineeId);
+
+                if (assessmentScore == null)
+                {
+                    // If the assessment score record doesn't exist, continue to the next one
+                    continue;
+                }
+
+                // Update the assessment score
+                assessmentScore.AvergeScore = assessmentScoreDTO.AvergeScore;
+                assessmentScore.CalculatedOn = DateTime.UtcNow;
+
+                _context.AssessmentScores.Update(assessmentScore);
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

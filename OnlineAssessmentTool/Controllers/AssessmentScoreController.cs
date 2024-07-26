@@ -3,6 +3,7 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
+using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -11,10 +12,11 @@ namespace OnlineAssessmentTool.Controllers
     public class AssessmentScoreController : Controller
     {
         private readonly IAssessmentScoreRepository _assessmentScoreRepository;
-
-        public AssessmentScoreController(IAssessmentScoreRepository assessmentScoreRepository)
+        private readonly IAssessmentScoreService _assessmentScoreService;
+        public AssessmentScoreController(IAssessmentScoreRepository assessmentScoreRepository, IAssessmentScoreService assessmentScoreService)
         {
             _assessmentScoreRepository = assessmentScoreRepository;
+            _assessmentScoreService = assessmentScoreService;
         }
 
         [HttpGet]
@@ -134,6 +136,22 @@ namespace OnlineAssessmentTool.Controllers
             response.StatusCode = HttpStatusCode.OK;
 
             return Ok(response);
+        }
+
+        [HttpPut("update-assessment-scores")]
+        public async Task<ActionResult<ApiResponse>> UpdateAssessmentScores([FromBody] UpdateAssessmentScoreDTO updateAssessmentScoreDTO)
+        {
+            try
+            {
+                await _assessmentScoreService.UpdateAssessmentScoresAsync(updateAssessmentScoreDTO.AssessmentScores);
+
+                return Ok(new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.OK, Message = new List<string> { "Assessment scores updated successfully." } });
+            }
+            catch (Exception ex)
+            {
+                // Log exception (ex) if necessary
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating assessment scores." } });
+            }
         }
     }
 }
