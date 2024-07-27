@@ -125,11 +125,15 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(result);
         }
 
-        [HttpGet("AssessmentTable")]
-        public async Task<IActionResult> GetAssessmentTable()
+        [HttpGet("{trainerId}")]
+        public async Task<ActionResult<List<AssessmentTableDTO>>> GetAssessmentTable(int trainerId)
         {
-            var dtos = await _assessmentRepository.GetAssessmentTable();
-            return Ok(dtos);
+            var assessments = await _assessmentRepository.GetAssessmentsForTrainer(trainerId);
+            if (assessments == null || assessments.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(assessments);
         }
 
 

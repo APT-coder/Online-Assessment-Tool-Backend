@@ -50,5 +50,26 @@ namespace OnlineAssessmentTool.Repository
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<object>> GetScoreDistributionAsync(int assessmentId)
+        {
+            var scoreDistribution = await _context.AssessmentScores
+                .Where(a => a.ScheduledAssessmentId == assessmentId)
+                .GroupBy(a => new
+                {
+                    Category = a.AvergeScore >= 90 ? "Above 90" :
+                               a.AvergeScore >= 80 ? "80 - 90" :
+                               a.AvergeScore >= 70 ? "70 - 80" :
+                               a.AvergeScore >= 60 ? "60 - 70" : "Below 60"
+                })
+                .Select(g => new
+                {
+                    Category = g.Key.Category,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return scoreDistribution;
+        }
     }
 }

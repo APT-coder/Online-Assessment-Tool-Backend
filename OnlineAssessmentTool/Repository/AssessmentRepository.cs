@@ -99,14 +99,16 @@ namespace OnlineAssessmentTool.Repository
             return highPerformers;
         }
 
-        public async Task<List<AssessmentTableDTO>> GetAssessmentTable()
+        public async Task<List<AssessmentTableDTO>> GetAssessmentsForTrainer(int trainerId)
         {
             var result = from a in _context.Assessments
                          join sa in _context.ScheduledAssessments on a.AssessmentId equals sa.AssessmentId
                          join b in _context.batch on sa.BatchId equals b.batchid
+                         join tb in _context.TrainerBatches on b.batchid equals tb.Batch_id
+                         where tb.Trainer_id == trainerId
                          select new AssessmentTableDTO
                          {
-                             AssessmentId = sa.AssessmentId,
+                             ScheduledAssessmentId = sa.ScheduledAssessmentId,
                              AssessmentName = a.AssessmentName,
                              BatchName = b.batchname,
                              CreatedOn = a.CreatedOn,

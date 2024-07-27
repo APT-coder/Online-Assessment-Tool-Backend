@@ -8,5 +8,6 @@ namespace OnlineAssessmentTool.Repository.IRepository
         Task<ICollection<AssessmentScoreGraphDTO>> GetAssessmentByIdAsync(int id);
         Task<AssessmentScore> GetByScheduledAssessmentAndTraineeAsync(int scheduledAssessmentId, int traineeId);
         Task UpdateAssessmentScoresAsync(List<AssessmentScoreDTO> assessmentScoreDTOs);
+        Task<IEnumerable<object>> GetScoreDistributionAsync(int assessmentId);
     }
 }

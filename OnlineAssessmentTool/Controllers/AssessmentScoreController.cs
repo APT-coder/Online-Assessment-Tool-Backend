@@ -49,6 +49,13 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpGet("score-distribution/{assessmentId}")]
+        public async Task<ActionResult<IEnumerable<object>>> GetScoreDistribution(int assessmentId)
+        {
+            var scoreDistribution = await _assessmentScoreRepository.GetScoreDistributionAsync(assessmentId);
+            return Ok(scoreDistribution);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostAssessmentScore([FromBody] AssessmentScoreDTO assessmentScoreDTO)
         {
