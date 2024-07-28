@@ -138,6 +138,13 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(result);
         }
 
+        [HttpGet("AssessmentTable/{scheduledAssessmentId}")]
+        public async Task<IActionResult> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
+        {
+            var dtos = await _assessmentRepository.GetAssessmentTableByScheduledAssessmentId(scheduledAssessmentId);
+            return Ok(dtos);
+        }
+
         [HttpGet("{trainerId}")]
         public async Task<ActionResult<List<AssessmentTableDTO>>> GetAssessmentTable(int trainerId)
         {
@@ -209,8 +216,32 @@ namespace OnlineAssessmentTool.Controllers
             }
             existingAssessment.AssessmentName = assessmentDTO.AssessmentName;
             existingAssessment.CreatedBy = assessmentDTO.CreatedBy;
+            existingAssessment.TotalScore = assessmentDTO.TotalScore;
             _assessmentRepository?.UpdateAsync(existingAssessment);
             _logger.LogInformation("Assessment with id {assessmentId} updated successfully",assessmentId);
+            response.IsSuccess = true;
+            response.Result = existingAssessment;
+            response.StatusCode = HttpStatusCode.OK;
+            response.Message.Add("Assessment updated successfully.");
+
+            return Ok(response);
+        }
+
+        [HttpPut("{assessmentId}")]
+        public async Task<IActionResult> UpdateAssessmentTotalScore(int assessmentId, [FromBody] UpdateAssessmentTotalScoreDTO assessmentDTO)
+        {
+            var response = new ApiResponse();
+            var existingAssessment = await _assessmentRepository.GetAssessmentByIdAsync(assessmentId);
+            if (existingAssessment == null)
+            {
+                _logger.LogWarning("Assessment with id {assessmentId} not found", assessmentId);
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.NotFound;
+                return NotFound(response);
+            }
+            existingAssessment.TotalScore = assessmentDTO.TotalScore;
+            _assessmentRepository?.UpdateAsync(existingAssessment);
+            _logger.LogInformation("Assessment with id {assessmentId} updated successfully", assessmentId);
             response.IsSuccess = true;
             response.Result = existingAssessment;
             response.StatusCode = HttpStatusCode.OK;

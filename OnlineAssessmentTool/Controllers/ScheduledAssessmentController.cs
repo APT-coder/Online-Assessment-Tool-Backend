@@ -247,7 +247,8 @@ namespace OnlineAssessmentTool.Controllers
                     Status = scheduledAssessmentDTO.Status,
                     CanRandomizeQuestion = scheduledAssessmentDTO.CanRandomizeQuestion,
                     CanDisplayResult = scheduledAssessmentDTO.CanDisplayResult,
-                    CanSubmitBeforeEnd = scheduledAssessmentDTO.CanSubmitBeforeEnd
+                    CanSubmitBeforeEnd = scheduledAssessmentDTO.CanSubmitBeforeEnd,
+                    Link = scheduledAssessmentDTO.Link,
                 };
 
                 await _scheduledAssessmentRepository.AddAsync(scheduledAssessment);
@@ -317,6 +318,7 @@ namespace OnlineAssessmentTool.Controllers
                 scheduledAssessment.CanRandomizeQuestion = scheduledAssessmentDTO.CanRandomizeQuestion;
                 scheduledAssessment.CanDisplayResult = scheduledAssessmentDTO.CanDisplayResult;
                 scheduledAssessment.CanSubmitBeforeEnd = scheduledAssessmentDTO.CanSubmitBeforeEnd;
+                scheduledAssessment.Link = scheduledAssessmentDTO.Link;
                 await _scheduledAssessmentRepository.UpdateAsync(scheduledAssessment);
                 return NoContent();
             }

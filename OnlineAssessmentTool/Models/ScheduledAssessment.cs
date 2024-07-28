@@ -28,5 +28,6 @@ namespace OnlineAssessmentTool.Models
         public bool CanRandomizeQuestion { get; set; }
         public bool CanDisplayResult { get; set; }
         public bool CanSubmitBeforeEnd { get; set; }
+        public string? Link { get; set; }
     }
 }
