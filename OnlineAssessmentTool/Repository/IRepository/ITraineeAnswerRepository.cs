@@ -6,5 +6,6 @@ namespace OnlineAssessmentTool.Repository.IRepository
     {
         Task<TraineeAnswer> GetTraineeAnswerAsync(int scheduledAssessmentId, int traineeId, int questionId);
         Task UpdateTraineeAnswerAsync(TraineeAnswer traineeAnswer);
+        Task<bool> CheckTraineeAnswerExistsAsync(int scheduledAssessmentId, int userId);
     }
 }

@@ -4,7 +4,9 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
 using OnlineAssessmentTool.Services.IService;
+using static OnlineAssessmentTool.Models.DTO.CheckTraineeAnswerExitsDTO;
 using Microsoft.Extensions.Logging; // Add this using directive
+
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -79,6 +81,32 @@ namespace OnlineAssessmentTool.Controllers
                     StatusCode = HttpStatusCode.InternalServerError,
                     Message = new List<string> { "Error processing the assessment." }
                 });
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CheckTraineeAnswerExists([FromBody] CheckTraineeAnswerDTO checkTraineeAnswerDTO)
+        {
+            var response = new ApiResponse();
+            try
+            {
+                bool exists = await _traineeAnswerRepository
+                    .CheckTraineeAnswerExistsAsync(checkTraineeAnswerDTO.ScheduledAssessmentId, checkTraineeAnswerDTO.UserId);
+
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Message.Add("Check completed successfully.");
+                response.Result = new { Exists = exists };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Message.Add("Error checking trainee answer.");
+                return StatusCode((int)HttpStatusCode.InternalServerError, response);
             }
         }
 
