@@ -17,6 +17,37 @@ namespace OnlineAssessmentTool.Controllers
             _assessmentScoreRepository = assessmentScoreRepository;
         }
 
+        [HttpGet("{traineeId}")]
+        public async Task<IActionResult> GetAssessmentScoresByTraineeId(int traineeId)
+        {
+            var response = new ApiResponse();
+
+            try
+            {
+                var assessmentScores = await _assessmentScoreRepository.GetAssessmentScoresByTraineeIdAsync(traineeId);
+
+                if (assessmentScores == null || assessmentScores.Count == 0)
+                {
+                    response.IsSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    response.Message = new List<string> { "No assessment scores found for the trainee." };
+                    return NotFound(response);
+                }
+
+                response.IsSuccess = true;
+                response.StatusCode = HttpStatusCode.OK;
+                response.Result = assessmentScores;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle it as per your application's error handling strategy
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Message = new List<string> { "Error retrieving assessment scores." };
+                return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
+        }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AssessmentScore>>> GetAssessmentScores()
         {
