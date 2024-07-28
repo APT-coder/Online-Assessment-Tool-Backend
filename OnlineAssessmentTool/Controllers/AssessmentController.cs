@@ -22,8 +22,8 @@ namespace OnlineAssessmentTool.Controllers
         {
             _assessmentService = assessmentService;
             _questionService = questionService;
-            _assessmentRepository = assessmentRepository ?? throw new ArgumentNullException(nameof(assessmentRepository));
-            _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+            _assessmentRepository = assessmentRepository;
+            _questionRepository = questionRepository;
             _logger = logger;
         }
 
@@ -136,13 +136,6 @@ namespace OnlineAssessmentTool.Controllers
             _logger.LogInformation("Fetching low performers in an assessment with id {assessmentId}", assessmentId);
             var result = await _assessmentRepository.GetLowPerformersByAssessmentIdAsync(assessmentId);
             return Ok(result);
-        }
-
-        [HttpGet("AssessmentTable/{scheduledAssessmentId}")]
-        public async Task<IActionResult> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
-        {
-            var dtos = await _assessmentRepository.GetAssessmentTableByScheduledAssessmentId(scheduledAssessmentId);
-            return Ok(dtos);
         }
 
         [HttpGet("{trainerId}")]

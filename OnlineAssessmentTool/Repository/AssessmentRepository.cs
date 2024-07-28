@@ -8,11 +8,11 @@ namespace OnlineAssessmentTool.Repository
 {
     public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
     {
-        private readonly APIContext _context;
+       
 
         public AssessmentRepository(APIContext context) : base(context)
         {
-            _context = context;
+           
         }
 
         public async Task<Assessment> GetAssessmentByIdAsync(int id)
@@ -99,25 +99,6 @@ namespace OnlineAssessmentTool.Repository
             ).Take(5).ToListAsync();
 
             return highPerformers;
-        }
-
-        public async Task<AssessmentTableDTO> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
-        {
-            var result = await (from a in _context.Assessments
-                                join sa in _context.ScheduledAssessments on a.AssessmentId equals sa.AssessmentId
-                                join b in _context.batch on sa.BatchId equals b.batchid
-                                where sa.ScheduledAssessmentId == scheduledAssessmentId
-                                select new AssessmentTableDTO
-                                {
-                                    AssessmentId = sa.AssessmentId,
-                                    AssessmentName = a.AssessmentName,
-                                    BatchName = b.batchname,
-                                    CreatedOn = a.CreatedOn,
-                                    ScheduledDate = sa.ScheduledDate,
-                                    Status = sa.Status.ToString()
-                                }).FirstOrDefaultAsync();
-
-            return result;
         }
 
         public async Task<List<AssessmentTableDTO>> GetAssessmentsForTrainer(int trainerId)

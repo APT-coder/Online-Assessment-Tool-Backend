@@ -7,11 +7,11 @@ namespace OnlineAssessmentTool.Repository
 {
     public class QuestionRepository : Repository<Question>, IQuestionRepository
     {
-        private readonly APIContext _context;
+       
 
         public QuestionRepository(APIContext context) : base(context)
         {
-            _context = context;
+           
         }
 
         public async Task<Question> GetQuestionByIdAsync(int questionId)

@@ -219,6 +219,13 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpGet("AssessmentTable/{scheduledAssessmentId}")]
+        public async Task<IActionResult> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
+        {
+            var dtos = await _scheduledAssessmentRepository.GetAssessmentTableByScheduledAssessmentId(scheduledAssessmentId);
+            return Ok(dtos);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostScheduledAssessment([FromBody] ScheduledAssessmentDTO scheduledAssessmentDTO)
         {
@@ -327,6 +334,46 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogError(ex, "Error deleting scheduled assessment with ID {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating assessment." } });
+            }
+        }
+
+        [HttpPut("update-status/{id}")]
+        public async Task<ActionResult<ApiResponse>> UpdateScheduledAssessmentStatus(int id, [FromBody] UpdateScheduledAssessmentStatusDTO statusUpdateDTO)
+        {
+            try
+            {
+                var scheduledAssessment = await _scheduledAssessmentRepository.GetByIdAsync(id);
+                if (scheduledAssessment == null)
+                {
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Scheduled Assessment not found." }
+                    });
+                }
+
+                // Update the status of the scheduled assessment
+                scheduledAssessment.Status = statusUpdateDTO.Status;
+
+                // Save changes to the database
+                await _scheduledAssessmentRepository.UpdateAsync(scheduledAssessment);
+
+                return Ok(new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.OK,
+                    Result = scheduledAssessment
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error updating status of scheduled assessment." }
+                });
             }
         }
     }
