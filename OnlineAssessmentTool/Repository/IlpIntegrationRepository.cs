@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 
 namespace OnlineAssessmentTool.Repository
@@ -48,6 +49,28 @@ namespace OnlineAssessmentTool.Repository
             }
 
             return (assessmentScore.AvergeScore, assessment.TotalScore ?? 0);
+        }
+        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        {
+            var result = await (from sa in _dbContext.ScheduledAssessments
+                                join a in _dbContext.Assessments on sa.AssessmentId equals a.AssessmentId
+                                join b in _dbContext.batch on sa.BatchId equals b.batchid
+                                join t in _dbContext.Trainers on a.CreatedBy equals t.TrainerId
+                                join u in _dbContext.Users on t.UserId equals u.UserId
+                                where sa.ScheduledAssessmentId == scheduledAssessmentId
+                                select new IlpIntegrationScheduledAssessmentDTO
+                                {
+                                    BatchName = b.batchname,
+                                    AssessmentId = sa.AssessmentId,
+                                    AssessmentName = a.AssessmentName,
+                                    CreatedByName = u.Username,
+                                    startDateTime = sa.StartTime,
+                                    endDateTime = sa.EndTime,
+                                    Link = sa.Link,
+                                    Status = sa.Status
+                                }).FirstOrDefaultAsync();
+
+            return result;
         }
     }
 }

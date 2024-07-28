@@ -1,4 +1,6 @@
-﻿using OnlineAssessmentTool.Repository.IRepository;
+﻿using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository;
+using OnlineAssessmentTool.Repository.IRepository;
 
 namespace OnlineAssessmentTool.Services
 {
@@ -14,6 +16,10 @@ namespace OnlineAssessmentTool.Services
         public async Task<(double AverageScore, int TotalScore)> GetAverageAndTotalScore(string traineeEmail, int scheduledAssessmentId)
         {
             return await _ilpRepository.GetAverageAndTotalScore(traineeEmail, scheduledAssessmentId);
+        }
+        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        {
+            return await _ilpRepository.GetScheduledAssessmentDetails(scheduledAssessmentId);
         }
     }
 }

@@ -29,7 +29,12 @@ namespace OnlineAssessmentTool.Models
         public bool CanDisplayResult { get; set; }
         public bool CanSubmitBeforeEnd { get; set; }
         public string? Link { get; set; }
-        public Assessment Assessment { get; set; }
+
+
+        [ForeignKey("BatchId")]
         public Batch Batch { get; set; }
+
+        [ForeignKey("AssessmentId")]
+        public Assessment Assessment { get; set; }
     }
 }

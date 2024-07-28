@@ -1,4 +1,5 @@
 ﻿using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
 
 namespace OnlineAssessmentTool.Repository.IRepository
 {
@@ -7,6 +8,7 @@ namespace OnlineAssessmentTool.Repository.IRepository
 
         Task<(double AverageScore, int TotalScore)> GetAverageAndTotalScore(string traineeEmail, int scheduledAssessmentId);
 
+        Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId);
+
     }
 }
-

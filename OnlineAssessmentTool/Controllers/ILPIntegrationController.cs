@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Services;
+using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -23,6 +24,16 @@ namespace OnlineAssessmentTool.Controllers
                 return NotFound(new { message = "No scores found for the given trainee email and scheduled assessment ID." });
             }
             return Ok(new { AverageScore = result.AverageScore, TotalScore = result.TotalScore });
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetScheduledAssessmentDetails(int id)
+        {
+            var result = await _ilpIntegrationService.GetScheduledAssessmentDetails(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
         }
     }
 }
