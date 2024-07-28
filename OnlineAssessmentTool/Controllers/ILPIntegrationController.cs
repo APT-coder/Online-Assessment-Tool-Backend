@@ -1,0 +1,39 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using OnlineAssessmentTool.Services;
+using OnlineAssessmentTool.Services.IService;
+
+namespace OnlineAssessmentTool.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class ILPIntegrationController : ControllerBase
+    {
+        private readonly ILPIntegrationService _ilpIntegrationService;
+
+        public ILPIntegrationController(ILPIntegrationService ilpIntegrationService)
+        {
+            _ilpIntegrationService = ilpIntegrationService;
+        }
+
+        [HttpGet("GetAverageAndTotalScore")]
+        public async Task<IActionResult> GetAverageAndTotalScore(string traineeEmail, int scheduledAssessmentId)
+        {
+            var result = await _ilpIntegrationService.GetAverageAndTotalScore(traineeEmail, scheduledAssessmentId);
+            if (result == (0, 0))
+            {
+                return NotFound(new { message = "No scores found for the given trainee email and scheduled assessment ID." });
+            }
+            return Ok(new { AverageScore = result.AverageScore, TotalScore = result.TotalScore });
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetScheduledAssessmentDetails(int id)
+        {
+            var result = await _ilpIntegrationService.GetScheduledAssessmentDetails(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
+        }
+    }
+}

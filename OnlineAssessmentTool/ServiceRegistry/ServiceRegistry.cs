@@ -52,6 +52,8 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IAssessmentScoreRepository, AssessmentScoreRepository>();
             services.AddScoped<IAssessmentScoreService, AssessmentScoreService>();
             services.AddScoped<IAssessmentPostService, AssessmentPostService>();
+            services.AddScoped<IIlpRepository, IlpIntegrationRepository>();
+            services.AddScoped<ILPIntegrationService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
 
