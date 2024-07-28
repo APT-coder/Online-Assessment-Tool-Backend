@@ -16,5 +16,6 @@ namespace OnlineAssessmentTool.Models
         public int TraineeId { get; set; }
         public int AvergeScore { get; set; }
         public DateTime CalculatedOn { get; set; }
+        public ScheduledAssessment ScheduledAssessment { get; set; }
     }
 }

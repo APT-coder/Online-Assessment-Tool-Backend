@@ -10,7 +10,7 @@ namespace OnlineAssessmentTool.Repository.IRepository
         Task<IEnumerable<AssessmentOverviewDTO>> GetAllAssessmentOverviewsAsync();
         Task<IEnumerable<TraineeScoreDTO>> GetHighPerformersByAssessmentIdAsync(int scheduledAssessmentId);
         Task<IEnumerable<TraineeScoreDTO>> GetLowPerformersByAssessmentIdAsync(int scheduledAssessmentId);
-        Task<List<AssessmentTableDTO>> GetAssessmentTable();
+        Task<List<AssessmentTableDTO>> GetAssessmentsForTrainer(int trainerId);
         Task<List<TraineeAssessmentTableDTO>> GetTraineeAssessmentDetails(int scheduledAssessmentId);
     }
 }

@@ -5,20 +5,27 @@ using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
 using OnlineAssessmentTool.Services.IService;
 using static OnlineAssessmentTool.Models.DTO.CheckTraineeAnswerExitsDTO;
+using Microsoft.Extensions.Logging; // Add this using directive
+
 
 namespace OnlineAssessmentTool.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TraineeAnswerController : ControllerBase
     {
         private readonly ITraineeAnswerRepository _traineeAnswerRepository;
         private readonly IAssessmentPostService _assessmentPostService;
+        private readonly ILogger<TraineeAnswerController> _logger; // Add this
 
-        public TraineeAnswerController(ITraineeAnswerRepository traineeAnswerRepository, IAssessmentPostService assessmentPostService)
+        public TraineeAnswerController(
+            ITraineeAnswerRepository traineeAnswerRepository,
+            IAssessmentPostService assessmentPostService,
+            ILogger<TraineeAnswerController> logger) // Add logger to constructor
         {
             _traineeAnswerRepository = traineeAnswerRepository;
             _assessmentPostService = assessmentPostService;
+            _logger = logger; // Initialize logger
         }
 
         [HttpGet]
@@ -26,11 +33,13 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
+                _logger.LogInformation("Fetching all trainee answers.");
                 var traineeAnswer = await _traineeAnswerRepository.GetAllAsync();
-                Console.WriteLine(traineeAnswer);
+                _logger.LogInformation("Fetched {answerCount} trainee answers.", traineeAnswer.Count());
 
                 if (traineeAnswer == null || !traineeAnswer.Any())
                 {
+                    _logger.LogWarning("No trainee answers found.");
                     return NotFound(new ApiResponse
                     {
                         IsSuccess = false,
@@ -43,6 +52,7 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while fetching trainee answers.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,
@@ -55,9 +65,23 @@ namespace OnlineAssessmentTool.Controllers
         [HttpPost("{userId}")]
         public async Task<IActionResult> AssessmentSubmit([FromBody] List<PostAssessmentDTO> questions, int userId)
         {
-
-            var traineeAnswer = await _assessmentPostService.ProcessTraineeAnswers(questions, userId);
-            return Ok();
+            try
+            {
+                _logger.LogInformation("Submitting assessment for user {userId}.", userId);
+                await _assessmentPostService.ProcessTraineeAnswers(questions, userId);
+                _logger.LogInformation("Assessment submitted successfully for user {userId}.", userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while submitting the assessment for user {userId}.", userId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error processing the assessment." }
+                });
+            }
         }
 
 
@@ -102,11 +126,23 @@ namespace OnlineAssessmentTool.Controllers
                 };
 
                 await _traineeAnswerRepository.AddAsync(traineeAnswer);
-                return CreatedAtAction(nameof(GetTraineeAnswer), new { id = traineeAnswer.TraineeAnswerId }, new ApiResponse { IsSuccess = true, StatusCode = HttpStatusCode.Created, Result = traineeAnswer });
+                _logger.LogInformation("Trainee answer created with ID {id}.", traineeAnswer.TraineeAnswerId);
+                return CreatedAtAction(nameof(GetTraineeAnswer), new { id = traineeAnswer.TraineeAnswerId }, new ApiResponse
+                {
+                    IsSuccess = true,
+                    StatusCode = HttpStatusCode.Created,
+                    Result = traineeAnswer
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating answer." } });
+                _logger.LogError(ex, "An error occurred while creating a trainee answer.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error creating answer." }
+                });
             }
         }
 
@@ -118,15 +154,28 @@ namespace OnlineAssessmentTool.Controllers
                 var traineeAnswer = await _traineeAnswerRepository.GetByIdAsync(id);
                 if (traineeAnswer == null)
                 {
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Answer not found." } });
+                    _logger.LogWarning("Trainee answer with ID {id} not found.", id);
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Answer not found." }
+                    });
                 }
 
                 await _traineeAnswerRepository.DeleteAsync(traineeAnswer);
+                _logger.LogInformation("Trainee answer with ID {id} deleted successfully.", id);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting answer." } });
+                _logger.LogError(ex, "An error occurred while deleting trainee answer with ID {id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error deleting answer." }
+                });
             }
         }
 
@@ -138,7 +187,13 @@ namespace OnlineAssessmentTool.Controllers
                 var traineeAnswer = await _traineeAnswerRepository.GetByIdAsync(id);
                 if (traineeAnswer == null)
                 {
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Answer not found." } });
+                    _logger.LogWarning("Trainee answer with ID {id} not found for update.", id);
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Answer not found." }
+                    });
                 }
 
                 traineeAnswer.ScheduledAssessmentId = traineeAnswerDTO.ScheduledAssessmentId;
@@ -148,11 +203,18 @@ namespace OnlineAssessmentTool.Controllers
                 traineeAnswer.IsCorrect = traineeAnswerDTO.IsCorrect;
                 traineeAnswer.Score = traineeAnswerDTO.Score;
                 await _traineeAnswerRepository.UpdateAsync(traineeAnswer);
+                _logger.LogInformation("Trainee answer with ID {id} updated successfully.", id);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating answer." } });
+                _logger.LogError(ex, "An error occurred while updating trainee answer with ID {id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error updating answer." }
+                });
             }
         }
 
@@ -161,10 +223,19 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                var traineeAnswer = await _traineeAnswerRepository.GetTraineeAnswerAsync(updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
+                _logger.LogInformation("Updating score for ScheduledAssessmentId {scheduledAssessmentId}, TraineeId {traineeId}, QuestionId {questionId}.",
+                    updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
+
+                var traineeAnswer = await _traineeAnswerRepository.GetTraineeAnswerAsync(
+                    updateScoreDTO.ScheduledAssessmentId,
+                    updateScoreDTO.TraineeId,
+                    updateScoreDTO.QuestionId
+                );
 
                 if (traineeAnswer == null)
                 {
+                    _logger.LogWarning("TraineeAnswer not found for ScheduledAssessmentId {scheduledAssessmentId}, TraineeId {traineeId}, QuestionId {questionId}.",
+                        updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
                     return NotFound(new ApiResponse
                     {
                         IsSuccess = false,
@@ -175,10 +246,14 @@ namespace OnlineAssessmentTool.Controllers
 
                 traineeAnswer.Score = updateScoreDTO.Score;
                 await _traineeAnswerRepository.UpdateTraineeAnswerAsync(traineeAnswer);
+                _logger.LogInformation("Score updated successfully for ScheduledAssessmentId {scheduledAssessmentId}, TraineeId {traineeId}, QuestionId {questionId}.",
+                    updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
                 return Ok(traineeAnswer);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "An error occurred while updating the score for ScheduledAssessmentId {scheduledAssessmentId}, TraineeId {traineeId}, QuestionId {questionId}.",
+                    updateScoreDTO.ScheduledAssessmentId, updateScoreDTO.TraineeId, updateScoreDTO.QuestionId);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
                 {
                     IsSuccess = false,

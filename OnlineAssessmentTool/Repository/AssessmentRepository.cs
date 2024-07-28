@@ -8,11 +8,11 @@ namespace OnlineAssessmentTool.Repository
 {
     public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
     {
-        private readonly APIContext _context;
+       
 
         public AssessmentRepository(APIContext context) : base(context)
         {
-            _context = context;
+           
         }
 
         public async Task<Assessment> GetAssessmentByIdAsync(int id)
@@ -38,22 +38,24 @@ namespace OnlineAssessmentTool.Repository
                           join a in _context.Assessments on sa.AssessmentId equals a.AssessmentId
                           join t in _context.Trainers on a.CreatedBy equals t.TrainerId
                           join u in _context.Users on t.UserId equals u.UserId
-                          join b in _context.batch on sa.BatchId equals b.batchid
+                          join b in _context.batch on sa.BatchId equals b.batchid // Correct table name
                           group new { sa, a, t, u, b } by new
                           {
-                              sa.AssessmentId,
+                              sa.ScheduledAssessmentId,
                               a.AssessmentName,
                               sa.ScheduledDate,
                               Trainer = u.Username,
-                              BatchName = b.batchname
+                              BatchName = b.batchname, // Group by BatchName
+                              sa.Status,
                           } into g
                           select new AssessmentOverviewDTO
                           {
-                              AssessmentId = g.Key.AssessmentId,
+                              AssessmentId = g.Key.ScheduledAssessmentId,
                               AssessmentName = g.Key.AssessmentName,
                               Date = g.Key.ScheduledDate,
                               Trainer = g.Key.Trainer,
-                              BatchName = g.Key.BatchName
+                              BatchName = g.Key.BatchName, // Correctly map BatchName
+                              Status = g.Key.Status.ToString(),
                           }).ToListAsync();
         }
 
@@ -99,14 +101,16 @@ namespace OnlineAssessmentTool.Repository
             return highPerformers;
         }
 
-        public async Task<List<AssessmentTableDTO>> GetAssessmentTable()
+        public async Task<List<AssessmentTableDTO>> GetAssessmentsForTrainer(int trainerId)
         {
             var result = from a in _context.Assessments
                          join sa in _context.ScheduledAssessments on a.AssessmentId equals sa.AssessmentId
                          join b in _context.batch on sa.BatchId equals b.batchid
+                         join tb in _context.TrainerBatches on b.batchid equals tb.Batch_id
+                         where tb.Trainer_id == trainerId
                          select new AssessmentTableDTO
                          {
-                             AssessmentId = sa.AssessmentId,
+                             ScheduledAssessmentId = sa.ScheduledAssessmentId,
                              AssessmentName = a.AssessmentName,
                              BatchName = b.batchname,
                              CreatedOn = a.CreatedOn,

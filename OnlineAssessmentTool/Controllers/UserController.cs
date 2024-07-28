@@ -1,120 +1,155 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using AutoMapper;
 using OnlineAssessmentTool.Services.IService;
+using Microsoft.Extensions.Logging; 
 
 namespace OnlineAssessmentTool.Controllers
 {
     [ApiController]
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     public class UserController : ControllerBase
     {
-        private readonly APIContext _context;
-        private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
-        private readonly ITrainerRepository _trainerRepository;
-        private readonly ITraineeRepository _traineeRepository;
         private readonly IMapper _mapper;
-        public UserController(APIContext context, IUserRepository userRepository, IUserService userService, ITraineeRepository traineeRepository, ITrainerRepository trainerRepository)
+        private readonly ILogger<UserController> _logger; 
+        public UserController(IUserService userService, ILogger<UserController> logger) 
         {
-            _context = context;
-            _userRepository = userRepository;
             _userService = userService;
-            _traineeRepository = traineeRepository;
-            _trainerRepository = trainerRepository;
+            _logger = logger; 
         }
 
         [HttpGet("byRole/{roleName}")]
         public async Task<IActionResult> GetUsersByRoleName(string roleName)
         {
-            var users = await _userService.GetUsersByRoleNameAsync(roleName);
-            if (users == null || !users.Any())
+            try
             {
-                return NotFound(new { Message = "No users found with the given role." });
+                _logger.LogInformation("Fetching users with role: {roleName}", roleName);
+                var users = await _userService.GetUsersByRoleNameAsync(roleName);
+                if (users == null || !users.Any())
+                {
+                    _logger.LogWarning("No users found with the role: {roleName}", roleName);
+                    return NotFound(new { Message = "No users found with the given role." });
+                }
+                return Ok(users);
             }
-
-            return Ok(users);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching users with role: {roleName}", roleName);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching users." });
+            }
         }
 
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
         {
-            var result = await _userService.CreateUserAsync(request.CreateUserDTO, request.TrainerDTO, request.TraineeDTO, request.BatchIds);
-
-            if (result)
+            if (!ModelState.IsValid)
             {
-                return Ok(new { message = "User created successfully" });
+                _logger.LogWarning("Invalid user data: {@ModelState}", ModelState);
+                return BadRequest(ModelState);
             }
-            return BadRequest(new { message = "User creation failed" });
-        }
+            try
+            {
+                _logger.LogInformation("Creating user with data: {@request}", request);
+                var result = await _userService.CreateUserAsync(request.CreateUserDTO, request.TrainerDTO, request.TraineeDTO, request.BatchIds);
 
+                if (result)
+                {
+                    _logger.LogInformation("User created successfully.");
+                    return Ok(new { message = "User created successfully" });
+                }
+                _logger.LogWarning("User creation failed.");
+                return BadRequest(new { message = "User creation failed" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while creating user.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while creating user." });
+            }
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
+                _logger.LogInformation("Attempting to delete user with ID: {id}", id);
                 await _userService.DeleteUserAsync(id);
+                _logger.LogInformation("User with ID {id} deleted successfully.", id);
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                _logger.LogError(ex, "An error occurred while deleting user with ID: {id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while deleting user." });
             }
         }
 
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequestDTO updateUserRequestDto)
         {
-            if (updateUserRequestDto == null)
+            try
             {
-                return BadRequest("Invalid user data.");
+                if (updateUserRequestDto == null)
+                {
+                    _logger.LogWarning("Invalid update user request data.");
+                    return BadRequest("Invalid user data.");
+                }
+                _logger.LogInformation("Updating user with data: {@updateUserRequestDto}", updateUserRequestDto);
+                var createUserDto = updateUserRequestDto.CreateUserDTO;
+                TrainerDTO trainerDto = null;
+                TraineeDTO traineeDto = null;
+                List<int> batchIds = updateUserRequestDto.BatchIds;
+                if (createUserDto.UserType == UserType.Trainer)
+                {
+                    trainerDto = updateUserRequestDto.TrainerDTO;
+                }
+                else if (createUserDto.UserType == UserType.Trainee)
+                {
+                    traineeDto = updateUserRequestDto.TraineeDTO;
+                }
+                var result = await _userService.UpdateUserAsync(createUserDto, trainerDto, traineeDto, batchIds);
+                if (result)
+                {
+                    _logger.LogInformation("User updated successfully.");
+                    return Ok(new { message = "User updated successfully." });
+                }
+                else
+                {
+                    _logger.LogWarning("User update failed.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the user.");
+                }
             }
-
-            var createUserDto = updateUserRequestDto.CreateUserDTO;
-
-            TrainerDTO trainerDto = null;
-            TraineeDTO traineeDto = null;
-            List<int> batchIds = updateUserRequestDto.BatchIds;
-
-            if (createUserDto.UserType == UserType.Trainer)
+            catch (Exception ex)
             {
-                trainerDto = updateUserRequestDto.TrainerDTO;
-            }
-            else if (createUserDto.UserType == UserType.Trainee)
-            {
-                traineeDto = updateUserRequestDto.TraineeDTO;
-            }
-
-            var result = await _userService.UpdateUserAsync(
-                createUserDto,
-                trainerDto,
-                traineeDto,
-                batchIds
-            );
-
-            if (result)
-            {
-                return Ok(new { message = "User updated successfully." });
-            }
-            else
-            {
-                return StatusCode(500, "An error occurred while updating the user.");
+                _logger.LogError(ex, "An error occurred while updating the user.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while updating the user." });
             }
         }
 
         [HttpGet("details/{email}")]
         public async Task<IActionResult> GetUserDetails(string email)
         {
-            var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
-            if (userDetails == null)
-                return NotFound();
+            try
+            {
+                _logger.LogInformation("Fetching user details for email: {email}", email);
+                var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
 
-            return Ok(userDetails);
+                if (userDetails == null)
+                {
+                    _logger.LogWarning("No user details found for email: {email}", email);
+                    return NotFound();
+                }
+
+                return Ok(userDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching user details for email: {email}", email);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
+            }
         }
     }
 }
-
