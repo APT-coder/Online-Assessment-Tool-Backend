@@ -7,19 +7,21 @@ using OnlineAssessmentTool.Models;
 
 namespace OnlineAssessmentTool.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly APIContext _dbContext;
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService)
+        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger)
         {
             _dbContext = dbContext;
             _userRepository = userRepository;
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpGet("getUserRole/{token}")]
@@ -45,6 +47,7 @@ namespace OnlineAssessmentTool.Controllers
                     return NotFound("UPN or App Display Name not found in token");
                 }
 
+                _logger.LogInformation("Fetching user details using email");
                 var user = await _userService.GetUserDetailsByEmailAsync(upn);
                 if (user != null)
                 {
@@ -72,6 +75,7 @@ namespace OnlineAssessmentTool.Controllers
                 }
                 else
                 {
+                    _logger.LogWarning("User is not found");
                     return NotFound($"{upn} is not found in Employees database.");
                 }
             }

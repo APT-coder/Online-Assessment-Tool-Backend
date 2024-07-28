@@ -3,10 +3,11 @@ using OnlineAssessmentTool.Models.DTO;
 using AutoMapper;
 using System.Net;
 using OnlineAssessmentTool.Repository.IRepository;
+using OnlineAssessmentTool.Models;
 
 namespace OnlineAssessmentTool.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AssessmentController : ControllerBase
     {
@@ -15,19 +16,23 @@ namespace OnlineAssessmentTool.Controllers
         private readonly IAssessmentRepository _assessmentRepository;
         private readonly IQuestionRepository _questionRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<AssessmentController> _logger;
 
-        public AssessmentController(IAssessmentService assessmentService, IQuestionService questionService, IAssessmentRepository assessmentRepository, IQuestionRepository questionRepository)
+        public AssessmentController(IAssessmentService assessmentService, IQuestionService questionService, IAssessmentRepository assessmentRepository, IQuestionRepository questionRepository, ILogger<AssessmentController> logger)
         {
             _assessmentService = assessmentService;
             _questionService = questionService;
             _assessmentRepository = assessmentRepository ?? throw new ArgumentNullException(nameof(assessmentRepository));
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+            _logger = logger;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetAllAssessments()
         {
             var response = new ApiResponse();
+            _logger.LogInformation("Retrieving all assessments.");
             var assessments = await _assessmentRepository.GetAllAsync();
             response.IsSuccess = true;
             response.Result = assessments;
@@ -40,9 +45,11 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<IActionResult> GetAssessment(int assessmentId)
         {
             var response = new ApiResponse();
+            _logger.LogInformation("Retrieving assessment with Id {assessmentId}.",assessmentId);
             var assessment = await _assessmentService.GetAssessmentByIdAsync(assessmentId);
             if (assessment == null)
             {
+                _logger.LogWarning("Assessment with ID {Id} not found.", assessmentId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(response);
@@ -60,6 +67,7 @@ namespace OnlineAssessmentTool.Controllers
 
             if (question == null)
             {
+                _logger.LogWarning("Question Options with ID {Id} not found.", questionId );
                 return NotFound(new ApiResponse
                 {
                     IsSuccess = false,
@@ -84,9 +92,11 @@ namespace OnlineAssessmentTool.Controllers
             var response = new ApiResponse();
             try
             {
+                _logger.LogInformation("Fetching all assessment overviews");
                 var overviews = await _assessmentRepository.GetAllAssessmentOverviewsAsync();
                 if (overviews == null || !overviews.Any())
                 {
+                    _logger.LogWarning(" Assessments are not found");
                     response.IsSuccess = false;
                     response.StatusCode = HttpStatusCode.NotFound;
                     response.Message.Add("No assessments found.");
@@ -101,6 +111,7 @@ namespace OnlineAssessmentTool.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error retrieving assessment overviews");
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Message.Add("Error retrieving assessment overviews: " + ex.Message);
@@ -113,6 +124,7 @@ namespace OnlineAssessmentTool.Controllers
         [HttpGet("highperformers/{assessmentId}")]
         public async Task<IActionResult> GetHighPerformers(int assessmentId)
         {
+            _logger.LogInformation("Fetching high performers in an assessment with id {assessmentId}",assessmentId);
             var result = await _assessmentRepository.GetHighPerformersByAssessmentIdAsync(assessmentId);
             Console.WriteLine(result);
             return Ok(result);
@@ -121,6 +133,7 @@ namespace OnlineAssessmentTool.Controllers
         [HttpGet("lowperformers/{assessmentId}")]
         public async Task<IActionResult> GetLowPerformers(int assessmentId)
         {
+            _logger.LogInformation("Fetching low performers in an assessment with id {assessmentId}", assessmentId);
             var result = await _assessmentRepository.GetLowPerformersByAssessmentIdAsync(assessmentId);
             return Ok(result);
         }
@@ -149,6 +162,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             var response = new ApiResponse();
             var assessment = await _assessmentService.CreateAssessmentAsync(assessmentDTO);
+            _logger.LogInformation("Assessment created successfully");
             response.IsSuccess = true;
             response.Result = assessment;
             response.StatusCode = HttpStatusCode.Created;
@@ -161,8 +175,10 @@ namespace OnlineAssessmentTool.Controllers
         {
             var response = new ApiResponse();
             var question = await _questionService.AddQuestionToAssessmentAsync(assessmentId, questionDTO);
+            _logger.LogInformation("Questions added to Assessment with id {assessmentId} successfully",assessmentId);
             if (question == null)
             {
+                _logger.LogWarning("Assessment with id {assessmentId} not found", assessmentId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 response.Message.Add("Assessment not found.");
@@ -182,14 +198,15 @@ namespace OnlineAssessmentTool.Controllers
             var existingAssessment = await _assessmentRepository.GetAssessmentByIdAsync(assessmentId);
             if (existingAssessment == null)
             {
+                _logger.LogWarning("Assessment with id {assessmentId} not found",assessmentId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(response);
             }
-
             existingAssessment.AssessmentName = assessmentDTO.AssessmentName;
             existingAssessment.CreatedBy = assessmentDTO.CreatedBy;
-            _assessmentRepository.UpdateAsync(existingAssessment);
+            _assessmentRepository?.UpdateAsync(existingAssessment);
+            _logger.LogInformation("Assessment with id {assessmentId} updated successfully",assessmentId);
             response.IsSuccess = true;
             response.Result = existingAssessment;
             response.StatusCode = HttpStatusCode.OK;
@@ -206,6 +223,7 @@ namespace OnlineAssessmentTool.Controllers
             var question = await _questionService.UpdateQuestionAsync(questionId, questionDTO);
             if (question == null)
             {
+                _logger.LogInformation("Question with id {quuestionId} not found", questionId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(response);
@@ -214,7 +232,9 @@ namespace OnlineAssessmentTool.Controllers
             response.Result = question;
             response.StatusCode = HttpStatusCode.OK;
             response.Message.Add("Question updated successfully.");
+            _logger.LogInformation("Question with id {quuestionId} updated successfully", questionId);
             return Ok(response);
+
         }
 
         [HttpDelete("{assessmentId}")]
@@ -224,6 +244,7 @@ namespace OnlineAssessmentTool.Controllers
             var assessment = await _assessmentService.GetAssessmentByIdAsync(assessmentId);
             if (assessment == null)
             {
+                _logger.LogWarning($"Assessment with id {assessmentId} was not found");
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 response.Message.Add("Assessment not found.");
@@ -233,6 +254,7 @@ namespace OnlineAssessmentTool.Controllers
             response.IsSuccess = true;
             response.StatusCode = HttpStatusCode.OK;
             response.Message.Add("Assessment deleted successfully.");
+            _logger.LogInformation("Assessment with id {assessmentId} deleted successfully",assessmentId);
             return Ok(response);
         }
 
@@ -243,6 +265,7 @@ namespace OnlineAssessmentTool.Controllers
             var question = await _questionService.GetQuestionByIdAsync(questionId);
             if (question == null)
             {
+                _logger.LogWarning($"Question with id {questionId} was not found");
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(response);
@@ -251,6 +274,7 @@ namespace OnlineAssessmentTool.Controllers
             response.IsSuccess = true;
             response.StatusCode = HttpStatusCode.OK;
             response.Message.Add("Question deleted successfully.");
+            _logger.LogInformation("question with id {questionId} deleted successfully", questionId);
             return Ok(response);
         }
     }

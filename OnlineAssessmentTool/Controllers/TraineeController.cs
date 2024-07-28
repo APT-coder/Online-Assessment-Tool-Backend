@@ -4,7 +4,7 @@ using OnlineAssessmentTool.Repository.IRepository;
 
 namespace OnlineAssessmentTool.Controllers
 {
-    [Route("[controller]/[action]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TraineeController : ControllerBase
     {
