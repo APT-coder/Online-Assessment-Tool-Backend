@@ -13,13 +13,16 @@ namespace OnlineAssessmentTool.Repository
         public async Task<ICollection<AssessmentScoreGraphDTO>> GetAssessmentByIdAsync(int id)
         {
             var assessmentScores = await _context.AssessmentScores
-                                      .Where(a => a.ScheduledAssessmentId == id)
-                                      .Select(a => new AssessmentScoreGraphDTO
-                                      {
-                                          TraineeId = a.TraineeId,
-                                          AvergeScore = a.AvergeScore
-                                      })
-                                      .ToListAsync();
+                                     .Where(a => a.ScheduledAssessmentId == id)
+                                     .Include(a => a.ScheduledAssessment) // Include ScheduledAssessment
+                                     .ThenInclude(sa => sa.Assessment) // Include Assessment within ScheduledAssessment
+                                     .Select(a => new AssessmentScoreGraphDTO
+                                     {
+                                         TraineeId = a.TraineeId,
+                                         AvergeScore = a.AvergeScore,
+                                         TotalScore = a.ScheduledAssessment.Assessment.TotalScore ?? 0 // Default to 0 if null
+                                     })
+                                     .ToListAsync();
             return assessmentScores;
         }
 
