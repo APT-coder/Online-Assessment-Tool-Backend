@@ -26,5 +26,9 @@ namespace OnlineAssessmentTool.Services
         {
             return await _scheduledAssessmentRepository.GetTraineeAnswerDetailsAsync(traineeId, scheduledAssessmentId);
         }
+        public async Task<ScheduledAssessmentDetailsDTO> GetScheduledAssessmentDetailsAsync(int scheduledAssessmentId)
+        {
+            return await _scheduledAssessmentRepository.GetScheduledAssessmentDetailsAsync(scheduledAssessmentId);
+        }
     }
 }

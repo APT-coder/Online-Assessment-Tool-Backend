@@ -177,6 +177,54 @@ namespace OnlineAssessmentTool.Repository
 
             return result;
         }
+
+        public async Task<ScheduledAssessmentDetailsDTO> GetScheduledAssessmentDetailsAsync(int scheduledAssessmentId)
+        {
+            var scheduledAssessment = await _context.ScheduledAssessments
+                .FirstOrDefaultAsync(sa => sa.ScheduledAssessmentId == scheduledAssessmentId);
+
+            if (scheduledAssessment == null)
+            {
+                throw new Exception("Scheduled assessment not found");
+            }
+
+            var assessmentId = scheduledAssessment.AssessmentId;
+
+            var assessment = await _context.Assessments
+                .FirstOrDefaultAsync(a => a.AssessmentId == assessmentId);
+
+            if (assessment == null)
+            {
+                throw new Exception("Assessment not found");
+            }
+
+            var maximumScore = assessment.TotalScore ?? 0;
+
+            var batchId = scheduledAssessment.BatchId;
+
+            var totalTrainees = await _context.batch
+                .Where(b => b.batchid == batchId)
+                .SelectMany(b => b.Trainees)
+                .CountAsync();
+
+            var traineesAttended = await _context.AssessmentScores
+                .Where(aa => aa.ScheduledAssessmentId == scheduledAssessmentId)
+                .Select(aa => aa.TraineeId)
+                .Distinct()
+                .CountAsync();
+
+            var absentees = totalTrainees - traineesAttended;
+
+            return new ScheduledAssessmentDetailsDTO
+            {
+                ScheduledAssessmentId = scheduledAssessmentId,
+                MaximumScore = maximumScore,
+                TotalTrainees = totalTrainees,
+                TraineesAttended = traineesAttended,
+                Absentees = absentees,
+                AssessmentDate = scheduledAssessment.ScheduledDate
+            };
+        }
     }
 }
 

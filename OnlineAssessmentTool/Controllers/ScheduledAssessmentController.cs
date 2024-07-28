@@ -226,6 +226,13 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(dtos);
         }
 
+        [HttpGet("{scheduledAssessmentId}")]
+        public async Task<ActionResult<ScheduledAssessmentDetailsDTO>> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        {
+            var result = await _scheduledAssessmentService.GetScheduledAssessmentDetailsAsync(scheduledAssessmentId);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostScheduledAssessment([FromBody] ScheduledAssessmentDTO scheduledAssessmentDTO)
         {
