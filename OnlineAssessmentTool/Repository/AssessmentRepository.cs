@@ -1,110 +1,18 @@
-﻿/*using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
-using System;
 
 namespace OnlineAssessmentTool.Repository
 {
     public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
     {
        
-        *//*public AssessmentRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<IEnumerable<Assessment>> GetAllAssessmentsAsync()
-        {
-            return await _context.Assessments
-                                 .Include(a => a.Questions)
-                                 .ThenInclude(q => q.QuestionOptions)
-                                 .ToListAsync();
-        }
-        public async Task<Assessment> GetAssessmentByIdAsync(int id)
-        {
-            return await _context.Assessments.Include(a => a.Questions)
-                                             .ThenInclude(q => q.QuestionOptions)
-                                             .FirstOrDefaultAsync(a => a.AssessmentId == id);
-        }
-
-        public async Task AddAssessmentAsync(Assessment assessment)
-        {
-            if (assessment.AssessmentId == 0) 
-            {
-                await _context.Assessments.AddAsync(assessment);
-            }
-            await _context.SaveChangesAsync();
-        }
-
-
-       
-        public async Task UpdateAssessmentAsync(Assessment assessment)
-        {
-            _context.Assessments.Update(assessment);
-            await _context.SaveChangesAsync();
-        }
-
-       
-
-        public async Task DeleteAssessmentAsync(int assessmentId)
-        {
-            var assessment = await GetAssessmentByIdAsync(assessmentId);
-            if (assessment != null)
-            {
-                _context.Assessments.Remove(assessment);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-       *//*
-
-        private readonly ApplicationDbContext _context;
-        public AssessmentRepository(ApplicationDbContext context) : base(context)
-        {
-
-        }
-
-        public async Task<Assessment> GetAssessmentByIdAsync(int id)
-        {
-            return await _context.Assessments.Include(a => a.Questions)
-                                             .ThenInclude(q => q.QuestionOptions)
-                                             .FirstOrDefaultAsync(a => a.AssessmentId == id);
-        }
-
-        public async Task DeleteAssessmentAsync(int assessmentId)
-        {
-            var assessment = await GetAssessmentByIdAsync(assessmentId);
-            if (assessment != null)
-            {
-                _context.Assessments.Remove(assessment);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-
-    }
-}
-*/
-
-
-using Microsoft.EntityFrameworkCore;
-using OnlineAssessmentTool.Data;
-using OnlineAssessmentTool.Models;
-using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Repository.IRepository;
-using System.Threading.Tasks;
-
-namespace OnlineAssessmentTool.Repository
-{
-    public class AssessmentRepository : Repository<Assessment>, IAssessmentRepository
-    {
-        private readonly APIContext _context;
 
         public AssessmentRepository(APIContext context) : base(context)
         {
-            _context = context;
+           
         }
 
         public async Task<Assessment> GetAssessmentByIdAsync(int id)
@@ -128,28 +36,28 @@ namespace OnlineAssessmentTool.Repository
         {
             return await (from sa in _context.ScheduledAssessments
                           join a in _context.Assessments on sa.AssessmentId equals a.AssessmentId
-                          join t in _context.Trainers on a.CreatedBy equals t.UserId
+                          join t in _context.Trainers on a.CreatedBy equals t.TrainerId
                           join u in _context.Users on t.UserId equals u.UserId
-                          join ats in _context.AssessmentScores on sa.ScheduledAssessmentId equals ats.ScheduledAssessmentId
-                          group new { sa, a, t, u, ats } by new
+                          join b in _context.batch on sa.BatchId equals b.batchid // Correct table name
+                          group new { sa, a, t, u, b } by new
                           {
-                              sa.AssessmentId,
+                              sa.ScheduledAssessmentId,
                               a.AssessmentName,
                               sa.ScheduledDate,
-                              Trainer = u.Username
+                              Trainer = u.Username,
+                              BatchName = b.batchname, // Group by BatchName
+                              sa.Status,
                           } into g
                           select new AssessmentOverviewDTO
                           {
+                              AssessmentId = g.Key.ScheduledAssessmentId,
                               AssessmentName = g.Key.AssessmentName,
                               Date = g.Key.ScheduledDate,
                               Trainer = g.Key.Trainer,
-                              NumberOfAttendees = g.Count(),
-                              MaximumScore = 100, // Replace with a value from the database if applicable
-                              HighestScore = g.Max(x => x.ats.AvergeScore),
-                              LowestScore = g.Min(x => x.ats.AvergeScore)
+                              BatchName = g.Key.BatchName, // Correctly map BatchName
+                              Status = g.Key.Status.ToString(),
                           }).ToListAsync();
         }
-
 
         public async Task<IEnumerable<TraineeScoreDTO>> GetLowPerformersByAssessmentIdAsync(int scheduledAssessmentId)
         {
@@ -193,13 +101,16 @@ namespace OnlineAssessmentTool.Repository
             return highPerformers;
         }
 
-        public async Task<List<AssessmentTableDTO>> GetAssessmentTable()
+        public async Task<List<AssessmentTableDTO>> GetAssessmentsForTrainer(int trainerId)
         {
             var result = from a in _context.Assessments
                          join sa in _context.ScheduledAssessments on a.AssessmentId equals sa.AssessmentId
                          join b in _context.batch on sa.BatchId equals b.batchid
+                         join tb in _context.TrainerBatches on b.batchid equals tb.Batch_id
+                         where tb.Trainer_id == trainerId
                          select new AssessmentTableDTO
                          {
+                             ScheduledAssessmentId = sa.ScheduledAssessmentId,
                              AssessmentName = a.AssessmentName,
                              BatchName = b.batchname,
                              CreatedOn = a.CreatedOn,
@@ -208,6 +119,64 @@ namespace OnlineAssessmentTool.Repository
                          };
 
             return await result.ToListAsync();
+        }
+
+        public async Task<List<TraineeAssessmentTableDTO>> GetTraineeAssessmentDetails(int scheduledAssessmentId)
+        {
+            var scheduledAssessment = await _context.ScheduledAssessments
+                                                    .Where(sa => sa.ScheduledAssessmentId == scheduledAssessmentId)
+                                                    .Select(sa => sa.BatchId)
+                                                    .FirstOrDefaultAsync();
+
+            if (scheduledAssessment == 0)
+            {
+                return new List<TraineeAssessmentTableDTO>();
+            }
+
+            var batchTrainees = await _context.Trainees
+                                               .Where(t => t.BatchId == scheduledAssessment)
+                                               .Include(t => t.User)
+                                               .OrderBy(t => t.User.Username)
+                                               .ToListAsync();
+
+            var assessmentScores = await _context.AssessmentScores
+                                                 .Where(a => a.ScheduledAssessmentId == scheduledAssessmentId)
+                                                 .ToListAsync();
+
+            var traineeScores = assessmentScores.ToDictionary(a => a.TraineeId, a => a.AvergeScore);
+
+            var traineeDetails = new List<TraineeAssessmentTableDTO>();
+
+            foreach (var trainee in batchTrainees)
+            {
+                var isCompleted = traineeScores.ContainsKey(trainee.TraineeId);
+                var status = isCompleted ? AttendanceStatus.Completed : AttendanceStatus.Absent;
+                var score = isCompleted ? traineeScores[trainee.TraineeId] : 0;
+
+                traineeDetails.Add(new TraineeAssessmentTableDTO
+                {
+                    TraineeName = trainee.User.Username,
+                    IsPresent = status.ToString(),
+                    Score = score
+                });
+            }
+
+            return traineeDetails;
+        }
+
+        private async Task<bool> CheckAttendanceStatus(int batchId, int traineeId, int scheduledAssessmentId)
+        {
+            var batchTrainees = await _context.Trainees
+                                               .Where(t => t.BatchId == batchId)
+                                               .Select(t => t.TraineeId)
+                                               .ToListAsync();
+
+            var scoredTrainees = await _context.AssessmentScores
+                                                .Where(a => a.ScheduledAssessmentId == scheduledAssessmentId)
+                                                .Select(a => a.TraineeId)
+                                                .ToListAsync();
+
+            return scoredTrainees.Contains(traineeId) && batchTrainees.Contains(traineeId);
         }
     }
 }

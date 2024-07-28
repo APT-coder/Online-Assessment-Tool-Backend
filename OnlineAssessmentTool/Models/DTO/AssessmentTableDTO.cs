@@ -1,7 +1,11 @@
-﻿namespace OnlineAssessmentTool.Models.DTO
+﻿using System.Reflection.Metadata;
+
+namespace OnlineAssessmentTool.Models.DTO
 {
     public class AssessmentTableDTO
     {
+        public int ScheduledAssessmentId { get; set; }
+        public int AssessmentId { get; set; }
         public string AssessmentName { get; set; }
         public string BatchName { get; set; }
         public DateTime CreatedOn { get; set; }

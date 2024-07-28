@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;

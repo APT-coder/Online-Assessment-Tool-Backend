@@ -9,5 +9,4 @@
         Task DeleteAsync(T entity);
         Task<bool> SaveAsync();
     }
-
 }

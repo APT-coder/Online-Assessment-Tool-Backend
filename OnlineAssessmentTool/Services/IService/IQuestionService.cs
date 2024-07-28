@@ -1,7 +1,5 @@
 ﻿using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 public interface IQuestionService
 {

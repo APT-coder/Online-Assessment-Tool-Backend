@@ -2,10 +2,9 @@
 {
     public enum AssessmentStatus
     {
-
         Upcoming,
-        Completed,
-        Cancelled
-
+        Evaluated,
+        Cancelled,
+        Completed
     }
 }

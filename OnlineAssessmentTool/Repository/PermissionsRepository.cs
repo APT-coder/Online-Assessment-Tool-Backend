@@ -7,13 +7,10 @@ namespace OnlineAssessmentTool.Repository
 {
     public class PermissionsRepository : Repository<Permission>, IPermissionsRepository
     {
-        public PermissionsRepository(APIContext context) : base(context) // Ensure APIContext is passed to base constructor
+        public PermissionsRepository(APIContext context) : base(context)
         {
 
         }
-
-
-
 
         public async Task<bool> ExistsAsync(int id)
         {
@@ -25,10 +22,9 @@ namespace OnlineAssessmentTool.Repository
                 .Where(p => permissionNames.Contains(p.PermissionName))
                 .ToListAsync();
         }
-
-
-
-
+        public async Task<List<Permission>> GetByIdsAsync(List<int> permissionIds)
+        {
+            return await _context.Permissions.Where(p => permissionIds.Contains(p.Id)).ToListAsync();
+        }
     }
-
 }

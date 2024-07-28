@@ -8,11 +8,9 @@ namespace OnlineAssessmentTool.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int QuestionId { get; set; }
-
         [ForeignKey("Assessment")]
         public int AssessmentId { get; set; }
         [Required]
-
         public string QuestionType { get; set; }
         [Required]
         public string QuestionText { get; set; }
@@ -27,6 +25,6 @@ namespace OnlineAssessmentTool.Models
         [Required]
         public ICollection<QuestionOption> QuestionOptions { get; set; }
         public Trainer Trainer { get; set; }
-        public TraineeAnswer TraineeAnswer { get; set; }
+        public ICollection<TraineeAnswer> TraineeAnswers { get; set; }
     }
 }

@@ -40,11 +40,14 @@ namespace OnlineAssessmentTool.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("TotalScore")
+                        .HasColumnType("integer");
+
                     b.HasKey("AssessmentId");
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("Assessments", (string)null);
+                    b.ToTable("Assessments");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.AssessmentScore", b =>
@@ -69,7 +72,9 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("AssessmentScoreId");
 
-                    b.ToTable("AssessmentScores", (string)null);
+                    b.HasIndex("ScheduledAssessmentId");
+
+                    b.ToTable("AssessmentScores");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Batch", b =>
@@ -87,7 +92,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("batchid");
 
-                    b.ToTable("batch", (string)null);
+                    b.ToTable("batch");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Permission", b =>
@@ -99,16 +104,14 @@ namespace OnlineAssessmentTool.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PermissionName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Question", b =>
@@ -145,7 +148,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.QuestionOption", b =>
@@ -161,19 +164,15 @@ namespace OnlineAssessmentTool.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Option1")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Option2")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Option3")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Option4")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("QuestionId")
@@ -183,7 +182,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("QuestionOptions", (string)null);
+                    b.ToTable("QuestionOptions");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Role", b =>
@@ -195,7 +194,6 @@ namespace OnlineAssessmentTool.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("RoleName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -235,6 +233,9 @@ namespace OnlineAssessmentTool.Migrations
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Link")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("ScheduledDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -249,7 +250,11 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("ScheduledAssessmentId");
 
-                    b.ToTable("ScheduledAssessments", (string)null);
+                    b.HasIndex("AssessmentId");
+
+                    b.HasIndex("BatchId");
+
+                    b.ToTable("ScheduledAssessments");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainee", b =>
@@ -275,7 +280,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Trainees", (string)null);
+                    b.ToTable("Trainees");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.TraineeAnswer", b =>
@@ -287,7 +292,6 @@ namespace OnlineAssessmentTool.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("TraineeAnswerId"));
 
                     b.Property<string>("Answer")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsCorrect")
@@ -307,10 +311,9 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasKey("TraineeAnswerId");
 
-                    b.HasIndex("QuestionId")
-                        .IsUnique();
+                    b.HasIndex("QuestionId");
 
-                    b.ToTable("TraineeAnswers", (string)null);
+                    b.ToTable("TraineeAnswers");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>
@@ -355,7 +358,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("Batch_id");
 
-                    b.ToTable("TrainerBatches", (string)null);
+                    b.ToTable("TrainerBatches");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Users", b =>
@@ -375,7 +378,6 @@ namespace OnlineAssessmentTool.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
@@ -407,7 +409,7 @@ namespace OnlineAssessmentTool.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RolePermission", (string)null);
+                    b.ToTable("RolePermission");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Assessment", b =>
@@ -419,6 +421,17 @@ namespace OnlineAssessmentTool.Migrations
                         .IsRequired();
 
                     b.Navigation("Trainer");
+                });
+
+            modelBuilder.Entity("OnlineAssessmentTool.Models.AssessmentScore", b =>
+                {
+                    b.HasOne("OnlineAssessmentTool.Models.ScheduledAssessment", "ScheduledAssessment")
+                        .WithMany()
+                        .HasForeignKey("ScheduledAssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ScheduledAssessment");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Question", b =>
@@ -451,6 +464,25 @@ namespace OnlineAssessmentTool.Migrations
                     b.Navigation("Question");
                 });
 
+            modelBuilder.Entity("OnlineAssessmentTool.Models.ScheduledAssessment", b =>
+                {
+                    b.HasOne("OnlineAssessmentTool.Models.Assessment", "Assessment")
+                        .WithMany()
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OnlineAssessmentTool.Models.Batch", "Batch")
+                        .WithMany()
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assessment");
+
+                    b.Navigation("Batch");
+                });
+
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainee", b =>
                 {
                     b.HasOne("OnlineAssessmentTool.Models.Batch", "Batch")
@@ -473,8 +505,8 @@ namespace OnlineAssessmentTool.Migrations
             modelBuilder.Entity("OnlineAssessmentTool.Models.TraineeAnswer", b =>
                 {
                     b.HasOne("OnlineAssessmentTool.Models.Question", "Question")
-                        .WithOne("TraineeAnswer")
-                        .HasForeignKey("OnlineAssessmentTool.Models.TraineeAnswer", "QuestionId")
+                        .WithMany("TraineeAnswers")
+                        .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -550,8 +582,7 @@ namespace OnlineAssessmentTool.Migrations
                 {
                     b.Navigation("QuestionOptions");
 
-                    b.Navigation("TraineeAnswer")
-                        .IsRequired();
+                    b.Navigation("TraineeAnswers");
                 });
 
             modelBuilder.Entity("OnlineAssessmentTool.Models.Trainer", b =>

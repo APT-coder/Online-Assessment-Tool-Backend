@@ -7,7 +7,7 @@ namespace OnlineAssessmentTool.Repository
 {
     public class TrainerRepository : Repository<Trainer>, ITrainerRepository
     {
-        public TrainerRepository(APIContext context) : base(context) // Ensure APIContext is passed to base constructor
+        public TrainerRepository(APIContext context) : base(context)
         {
 
         }
@@ -16,6 +16,13 @@ namespace OnlineAssessmentTool.Repository
             return await _context.Trainers
                 .Include(t => t.User)
                 .FirstOrDefaultAsync(t => t.UserId == userId);
+        }
+        public async Task<List<string>> GetAllTrainersAsync()
+        {
+            return await _context.Trainers
+                .Include(t => t.User)
+                .Select(t => t.User.Username)
+                .ToListAsync();
         }
     }
 }

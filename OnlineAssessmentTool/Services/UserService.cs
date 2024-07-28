@@ -15,8 +15,6 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly APIContext _context;
 
-
-
     public UserService(
         IUserRepository userRepository,
         ITrainerRepository trainerRepository,
@@ -39,12 +37,10 @@ public class UserService : IUserService
         {
             try
             {
-                // Map CreateUserDTO to Users entity
                 var user = _mapper.Map<Users>(createUserDto);
                 await _userRepository.AddAsync(user);
                 await _userRepository.SaveAsync();
 
-                // Handle trainer creation
                 if (user.UserType == UserType.Trainer && trainerDto != null)
                 {
                     var trainer = _mapper.Map<Trainer>(trainerDto);
@@ -52,7 +48,6 @@ public class UserService : IUserService
                     await _trainerRepository.AddAsync(trainer);
                     await _trainerRepository.SaveAsync();
 
-                    // Handle batch associations
                     if (batchIds != null && batchIds.Any())
                     {
                         foreach (var batchId in batchIds)
@@ -68,7 +63,6 @@ public class UserService : IUserService
                         await _trainerBatchRepository.SaveAsync();
                     }
                 }
-                // Handle trainee creation
                 else if (user.UserType == UserType.Trainee && traineeDto != null)
                 {
                     var trainee = _mapper.Map<Trainee>(traineeDto);
@@ -88,7 +82,6 @@ public class UserService : IUserService
         }
     }
 
-
     public async Task<List<Users>> GetUsersByRoleNameAsync(string roleName)
     {
         var lowerRoleName = roleName.ToLower();
@@ -102,9 +95,6 @@ public class UserService : IUserService
         return await query.ToListAsync();
     }
 
-
-
-
     public async Task DeleteUserAsync(int userId)
     {
         var user = await _context.Users.FindAsync(userId);
@@ -115,7 +105,6 @@ public class UserService : IUserService
 
         var userType = user.UserType;
 
-        // If the user is a Trainer, delete associated Trainer and TrainerBatches records
         if (userType == UserType.Trainer)
         {
             var trainer = await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == userId);
@@ -127,7 +116,6 @@ public class UserService : IUserService
             }
         }
 
-        // If the user is a Trainee, delete the associated Trainee record
         if (userType == UserType.Trainee)
         {
             var trainee = await _context.Trainees.FirstOrDefaultAsync(t => t.UserId == userId);
@@ -137,65 +125,9 @@ public class UserService : IUserService
             }
         }
 
-        // Finally, delete the User record
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
     }
-
-
-
-
-
-
-    public async Task<bool> UpdateUserAsync(Users user)
-    {
-        // Retrieve the existing user
-        var existingUser = await _userRepository.GetByIdAsync(user.UserId);
-        if (existingUser == null)
-        {
-            return false;
-        }
-
-        // Update user properties
-        existingUser.Username = user.Username;
-        existingUser.Email = user.Email;
-        existingUser.Phone = user.Phone;
-        existingUser.IsAdmin = user.IsAdmin;
-        existingUser.UserType = user.UserType;
-
-        // Handle specific user types
-        if (user.UserType == UserType.Trainer)
-        {
-            var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
-            if (trainer != null)
-            {
-                trainer.User = existingUser;  // Update Trainer with existing user
-                _trainerRepository.UpdateAsync(trainer); // Ensure Trainer is updated
-            }
-        }
-        else if (user.UserType == UserType.Trainee)
-        {
-            var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
-            if (trainee != null)
-            {
-                trainee.User = existingUser;  // Update Trainee with existing user
-                _traineeRepository.UpdateAsync(trainee); // Ensure Trainee is updated
-            }
-        }
-
-        // Update the user in the repository
-        _userRepository.UpdateAsync(existingUser);
-        return await _userRepository.SaveAsync();
-    }
-
-
-    public async Task<Users> GetUserByIdAsync(int id)
-    {
-        return await _userRepository.GetByIdAsync(id);
-    }
-
-
-
 
     public async Task<UserDetailsDTO> GetUserDetailsByEmailAsync(string email)
     {
@@ -239,8 +171,85 @@ public class UserService : IUserService
         return userDetails;
     }
 
+    public async Task<bool> UpdateUserAsync(
+    CreateUserDTO createUserDto,
+    TrainerDTO trainerDto = null,
+    TraineeDTO traineeDto = null,
+    List<int> batchIds = null
+)
+    {
+        using (var transaction = await _userRepository.BeginTransactionAsync())
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(createUserDto.userId);
+                if (user == null)
+                {
+                    return false;
+                }
 
+                user.Username = createUserDto.Username;
+                user.Email = createUserDto.Email;
+                user.Phone = createUserDto.Phone;
+                user.IsAdmin = createUserDto.IsAdmin;
 
+                await _userRepository.UpdateAsync(user);
+                await _userRepository.SaveAsync();
+
+                if (createUserDto.UserType == UserType.Trainer && trainerDto != null)
+                {
+                    var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
+                    if (trainer != null)
+                    {
+                        trainer.JoinedOn = trainerDto.JoinedOn;
+                        trainer.Password = trainerDto.Password;
+                        trainer.RoleId = trainerDto.RoleId;
+
+                        await _trainerRepository.UpdateAsync(trainer);
+                        await _trainerRepository.SaveAsync();
+
+                        var existingBatches = await _trainerBatchRepository.GetByTrainerIdAsync(trainer.TrainerId);
+                        await _trainerBatchRepository.RemoveRangeAsync(existingBatches);
+
+                        if (batchIds != null && batchIds.Any())
+                        {
+                            foreach (var batchId in batchIds)
+                            {
+                                var trainerBatch = new TrainerBatch
+                                {
+                                    Trainer_id = trainer.TrainerId,
+                                    Batch_id = batchId
+                                };
+
+                                await _trainerBatchRepository.AddAsync(trainerBatch);
+                            }
+                            await _trainerBatchRepository.SaveAsync();
+                        }
+                    }
+                }
+                else if (createUserDto.UserType == UserType.Trainee && traineeDto != null)
+                {
+                    var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
+                    if (trainee != null)
+                    {
+                        trainee.JoinedOn = traineeDto.JoinedOn;
+                        trainee.BatchId = traineeDto.BatchId;
+
+                        await _traineeRepository.UpdateAsync(trainee);
+                        await _traineeRepository.SaveAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
 }
 
 

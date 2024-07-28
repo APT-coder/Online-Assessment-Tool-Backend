@@ -6,7 +6,6 @@ namespace OnlineAssessmentTool.Repository.IRepository
     {
         Task<Question> GetQuestionByIdAsync(int questionId);
         Task UpdateQuestionAsync(Question question);
-
         Task DeleteQuestionAsync(int questionId);
     }
 }
