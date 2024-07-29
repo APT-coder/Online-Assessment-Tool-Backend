@@ -25,10 +25,10 @@ namespace OnlineAssessmentTool.Controllers
             }
             return Ok(new { AverageScore = result.AverageScore, TotalScore = result.TotalScore });
         }
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetScheduledAssessmentDetails(int id)
+        [HttpGet("{batchname}")]
+        public async Task<IActionResult> GetScheduledAssessmentDetails( string batchname)
         {
-            var result = await _ilpIntegrationService.GetScheduledAssessmentDetails(id);
+            var result = await _ilpIntegrationService.GetScheduledAssessmentDetails(batchname);
             if (result == null)
             {
                 return NotFound();
