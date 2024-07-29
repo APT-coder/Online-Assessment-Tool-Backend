@@ -8,7 +8,7 @@ namespace OnlineAssessmentTool.Repository.IRepository
 
         Task<(double AverageScore, int TotalScore)> GetAverageAndTotalScore(string traineeEmail, int scheduledAssessmentId);
 
-        Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId);
+        Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(string batchname);
 
     }
 }
