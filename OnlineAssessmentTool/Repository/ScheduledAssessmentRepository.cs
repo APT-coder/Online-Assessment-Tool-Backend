@@ -39,7 +39,6 @@ namespace OnlineAssessmentTool.Repository
 
         public async Task<IEnumerable<TraineeStatusDTO>> GetAbsentStudentsAsync(int scheduledAssessmentId)
         {
-            // Retrieve the batch ID for the given scheduled assessment
             var batchId = await _context.ScheduledAssessments
                 .Where(sa => sa.ScheduledAssessmentId == scheduledAssessmentId)
                 .Select(sa => sa.BatchId)
@@ -94,7 +93,7 @@ namespace OnlineAssessmentTool.Repository
                             Option4 = o.Option4,
                             CorrectAnswer = o.CorrectAnswer
                         })
-                        .FirstOrDefault() // Assuming you need the options for each question
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
