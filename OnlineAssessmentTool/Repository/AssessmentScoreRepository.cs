@@ -25,31 +25,29 @@ namespace OnlineAssessmentTool.Repository
                                      .ToListAsync();
             return assessmentScores;
         }
-        
+
         public async Task<List<TraineeAssessmentScoreDTO>> GetAssessmentScoresByTraineeIdAsync(int traineeId)
         {
-            return await _context.AssessmentScores
-                .Where(ass => ass.TraineeId == traineeId)
-                .Select(ass => new TraineeAssessmentScoreDTO
-                {
-                    AssessmentScoreId = ass.AssessmentScoreId,
-                    ScheduledAssessmentId = ass.ScheduledAssessmentId,
-                    AssessmentName = _context.Assessments
-                        .Where(a => a.AssessmentId == ass.ScheduledAssessmentId)
-                        .Select(a => a.AssessmentName)
-                        .FirstOrDefault(),
+            var query = from ass in _context.AssessmentScores
+                        join sa in _context.ScheduledAssessments
+                        on ass.ScheduledAssessmentId equals sa.ScheduledAssessmentId
+                        join a in _context.Assessments
+                        on sa.AssessmentId equals a.AssessmentId
+                        where ass.TraineeId == traineeId
+                        select new TraineeAssessmentScoreDTO
+                        {
+                            AssessmentScoreId = ass.AssessmentScoreId,
+                            ScheduledAssessmentId = ass.ScheduledAssessmentId,
+                            AssessmentId = sa.AssessmentId,
+                            AssessmentName = a.AssessmentName,
+                            ScheduledDate = sa.ScheduledDate,
+                            Score = ass.AvergeScore,
+                            CalculatedOn = ass.CalculatedOn
+                        };
 
-                    ScheduledDate =_context.ScheduledAssessments
-                        .Where(s => s.ScheduledAssessmentId == ass.ScheduledAssessmentId)
-                        .Select(s => s.ScheduledDate)
-                        .FirstOrDefault(),
-
-                    /*ScheduledDate = a.ScheduledAssessment.StartDate,*/
-                    Score = ass.AvergeScore,
-                    CalculatedOn = ass.CalculatedOn
-                })
-                .ToListAsync();
+            return await query.ToListAsync();
         }
+
         public async Task<AssessmentScore> GetByScheduledAssessmentAndTraineeAsync(int scheduledAssessmentId, int traineeId)
         {
             return await _context.AssessmentScores

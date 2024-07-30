@@ -4,6 +4,7 @@
     {
         public int BatchId { get; set; }
         public int AssessmentId { get; set; }
+        public int ScheduledAssessmentId { get; set; }
         public string AssessmentName { get; set; }
         public DateTime ScheduledDate { get; set; }
         public TimeSpan AssessmentDuration { get; set; }
