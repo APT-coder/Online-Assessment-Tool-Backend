@@ -37,7 +37,6 @@ namespace OnlineAssessmentToolNUnitTest
             // Arrange
             var batches = new List<Batch>
             {
-                new Batch { batchid = 1, batchname = "Batch 1" },
                 new Batch { batchid = 2, batchname = "Batch 2" }
             };
             _batchRepositoryMock.Setup(repo => repo.GetAllAsync()).ReturnsAsync(batches);
