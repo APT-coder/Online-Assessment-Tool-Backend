@@ -128,7 +128,7 @@ namespace OnlineAssessmentTool.Repository
         public async Task<List<GetScheduledAssessmentDTO>> GetScheduledAssessmentsByUserIdAsync(int userId)
         {
             var traineeBatchIds = await _context.Trainees
-                .Where(t => t.UserId == userId)
+                .Where(t => t.TraineeId == userId)
                 .Select(t => t.BatchId)
                 .ToListAsync();
 
@@ -138,6 +138,7 @@ namespace OnlineAssessmentTool.Repository
                 {
                     BatchId = sa.BatchId,
                     AssessmentId = sa.AssessmentId,
+                    ScheduledAssessmentId = sa.ScheduledAssessmentId,
                     AssessmentName = _context.Assessments
                         .Where(a => a.AssessmentId == sa.AssessmentId)
                         .Select(a => a.AssessmentName)
