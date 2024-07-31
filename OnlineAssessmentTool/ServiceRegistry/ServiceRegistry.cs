@@ -4,6 +4,7 @@ using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
+using System;
 using System.Text.Json.Serialization;
 
 namespace OnlineAssessmentTool.ServiceRegistry
@@ -28,9 +29,12 @@ namespace OnlineAssessmentTool.ServiceRegistry
                         .AllowAnyMethod());
             });
 
+            DotNetEnv.Env.Load();
+
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = Environment.GetEnvironmentVariable("POSTGRESQL_CONNECTION_STRING");
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();
