@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -294,6 +295,250 @@ namespace OnlineAssessmentToolNUnitTest
             Assert.IsNotNull(response.Message, "Message list should not be null");
             Assert.IsNotEmpty(response.Message, "Message list should contain at least one item");
             Assert.AreEqual("Assessment not found.", response.Message.First(), "Message should match expected error message");
+        }
+
+        [Test]
+        public async Task GetHighPerformers_ReturnsOk_WhenDataFound()
+        {
+            // Arrange
+            var highPerformers = new List<TraineeScoreDTO>
+        {
+            new TraineeScoreDTO { TraineeName = "John Doe", Score = 95 }
+        };
+
+            _mockAssessmentRepository.Setup(repo => repo.GetHighPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(highPerformers);
+
+            // Act
+            var result = await _controller.GetHighPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.AreEqual(highPerformers, okResult.Value);
+        }
+
+        [Test]
+        public async Task GetHighPerformers_ReturnsNotFound_WhenNoDataFound()
+        {
+            // Arrange
+            _mockAssessmentRepository.Setup(repo => repo.GetHighPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(new List<TraineeScoreDTO>());
+
+            // Act
+            var result = await _controller.GetHighPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.IsEmpty(okResult.Value as List<TraineeScoreDTO>);
+        }
+
+
+
+        [Test]
+        public async Task GetLowPerformers_ReturnsOk_WhenDataFound()
+        {
+            // Arrange
+            var lowPerformers = new List<TraineeScoreDTO>
+        {
+            new TraineeScoreDTO { TraineeName = "Jane Doe", Score = 45 }
+        };
+
+            _mockAssessmentRepository.Setup(repo => repo.GetLowPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(lowPerformers);
+
+            // Act
+            var result = await _controller.GetLowPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.AreEqual(lowPerformers, okResult.Value);
+        }
+
+        [Test]
+        public async Task GetLowPerformers_ReturnsNotFound_WhenNoDataFound()
+        {
+            // Arrange
+            _mockAssessmentRepository.Setup(repo => repo.GetLowPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(new List<TraineeScoreDTO>());
+
+            // Act
+            var result = await _controller.GetLowPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.IsEmpty(okResult.Value as List<TraineeScoreDTO>);
+        }
+
+        [Test]
+        public async Task GetHighPerformers_ReturnsOk_WhenEmptyListReturned()
+        {
+            // Arrange
+            _mockAssessmentRepository.Setup(repo => repo.GetHighPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(new List<TraineeScoreDTO>());
+
+            // Act
+            var result = await _controller.GetHighPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.IsEmpty(okResult.Value as List<TraineeScoreDTO>, "Expected empty list but got non-empty list");
+        }
+
+        [Test]
+        public async Task GetLowPerformers_ReturnsOk_WhenEmptyListReturned()
+        {
+            // Arrange
+            _mockAssessmentRepository.Setup(repo => repo.GetLowPerformersByAssessmentIdAsync(1))
+                .ReturnsAsync(new List<TraineeScoreDTO>());
+
+            // Act
+            var result = await _controller.GetLowPerformers(1);
+
+            // Assert
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult, "Expected OkObjectResult but got null");
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode, "Expected Status 200 OK but got different status");
+            Assert.IsEmpty(okResult.Value as List<TraineeScoreDTO>, "Expected empty list but got non-empty list");
+        }
+
+        [Test]
+        public async Task GetTraineeAssessmentDetails_ReturnsOkResult_WithTraineeDetails()
+        {
+            // Arrange
+            int scheduledAssessmentId = 1;
+            var traineeDetails = new List<TraineeAssessmentTableDTO>
+        {
+            new TraineeAssessmentTableDTO { TraineeName = "John Doe", IsPresent = "Completed", Score = 85 },
+            new TraineeAssessmentTableDTO { TraineeName = "Jane Smith", IsPresent = "Absent", Score = 0 }
+        };
+
+            _mockAssessmentRepository.Setup(repo => repo.GetTraineeAssessmentDetails(scheduledAssessmentId))
+                                     .ReturnsAsync(traineeDetails);
+
+            // Act
+            var result = await _controller.GetTraineeAssessmentDetails(scheduledAssessmentId);
+
+            // Assert
+            Assert.IsInstanceOf<OkObjectResult>(result.Result);
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(traineeDetails, okResult.Value);
+        }
+
+        [Test]
+        public async Task GetTraineeAssessmentDetails_ReturnsNotFound_WhenNoTraineeDetailsFound()
+        {
+            // Arrange
+            int scheduledAssessmentId = 1;
+            _mockAssessmentRepository.Setup(repo => repo.GetTraineeAssessmentDetails(scheduledAssessmentId))
+                                     .ReturnsAsync(new List<TraineeAssessmentTableDTO>());
+
+            // Act
+            var result = await _controller.GetTraineeAssessmentDetails(scheduledAssessmentId);
+
+            // Assert
+            var notFoundResult = result.Result as NotFoundResult;
+            Assert.That(notFoundResult, Is.InstanceOf<NotFoundResult>(), "Result should be of type NotFoundResult.");
+        }
+
+        [Test]
+        public void Controller_IsInitialized_WithDependencies()
+        {
+            // Arrange & Act
+            var controller = new AssessmentController(null, null, _mockAssessmentRepository.Object, null, _mockLogger.Object);
+
+            // Assert
+            Assert.NotNull(controller, "Controller should be properly initialized.");
+        }
+
+        [Test]
+        public async Task GetTraineeAssessmentDetails_ReturnsCorrectDataStructure()
+        {
+            // Arrange
+            int scheduledAssessmentId = 1;
+            var traineeDetails = new List<TraineeAssessmentTableDTO>
+{
+    new TraineeAssessmentTableDTO { TraineeName = "John Doe", IsPresent = "Completed", Score = 85 },
+    new TraineeAssessmentTableDTO { TraineeName = "Jane Smith", IsPresent = "Absent", Score = 0 }
+};
+
+            _mockAssessmentRepository.Setup(repo => repo.GetTraineeAssessmentDetails(scheduledAssessmentId))
+                                     .ReturnsAsync(traineeDetails);
+
+            // Act
+            var result = await _controller.GetTraineeAssessmentDetails(scheduledAssessmentId);
+
+            // Assert
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            var resultData = okResult.Value as List<TraineeAssessmentTableDTO>;
+            Assert.IsNotNull(resultData);
+            Assert.AreEqual(2, resultData.Count, "The result should contain two trainee details.");
+            Assert.AreEqual("John Doe", resultData[0].TraineeName, "The first trainee's name should be 'John Doe'.");
+            Assert.AreEqual("Completed", resultData[0].IsPresent, "The first trainee's status should be 'Completed'.");
+            Assert.AreEqual(85, resultData[0].Score, "The first trainee's score should be 85.");
+        }
+
+        [Test]
+        public async Task GetTraineeAssessmentDetails_EndpointResponseTime_IsWithinRange()
+        {
+            // Arrange
+            int scheduledAssessmentId = 1;
+            var traineeDetails = new List<TraineeAssessmentTableDTO>
+{
+    new TraineeAssessmentTableDTO { TraineeName = "John Doe", IsPresent = "Completed", Score = 85 },
+    new TraineeAssessmentTableDTO { TraineeName = "Jane Smith", IsPresent = "Absent", Score = 0 }
+};
+
+            _mockAssessmentRepository.Setup(repo => repo.GetTraineeAssessmentDetails(scheduledAssessmentId))
+                                     .ReturnsAsync(traineeDetails);
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+            // Act
+            var result = await _controller.GetTraineeAssessmentDetails(scheduledAssessmentId);
+
+            stopwatch.Stop();
+            var responseTime = stopwatch.ElapsedMilliseconds;
+
+            // Assert
+            Assert.LessOrEqual(responseTime, 500, "The response time should be within 500 milliseconds.");
+        }
+
+        [Test]
+        public async Task GetTraineeAssessmentDetails_ReturnsMultipleTraineeDetails()
+        {
+            // Arrange
+            int scheduledAssessmentId = 1;
+            var traineeDetails = new List<TraineeAssessmentTableDTO>
+{
+    new TraineeAssessmentTableDTO { TraineeName = "John Doe", IsPresent = "Completed", Score = 85 },
+    new TraineeAssessmentTableDTO { TraineeName = "Jane Smith", IsPresent = "Absent", Score = 0 },
+    new TraineeAssessmentTableDTO { TraineeName = "Alice Johnson", IsPresent = "Completed", Score = 90 }
+};
+
+            _mockAssessmentRepository.Setup(repo => repo.GetTraineeAssessmentDetails(scheduledAssessmentId))
+                                     .ReturnsAsync(traineeDetails);
+
+            // Act
+            var result = await _controller.GetTraineeAssessmentDetails(scheduledAssessmentId);
+
+            // Assert
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            var resultData = okResult.Value as List<TraineeAssessmentTableDTO>;
+            Assert.IsNotNull(resultData);
+            Assert.AreEqual(3, resultData.Count, "The result should contain three trainee details.");
         }
 
     }
