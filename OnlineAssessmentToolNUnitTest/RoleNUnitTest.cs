@@ -14,7 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace OnlineAssessmentToolTestProject
+namespace OnlineAssessmentToolNUnitTest
 {
     public class RoleNUnitTest
     {
