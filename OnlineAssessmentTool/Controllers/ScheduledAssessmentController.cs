@@ -16,8 +16,8 @@ namespace OnlineAssessmentTool.Controllers
     {
         private readonly IScheduledAssessmentRepository _scheduledAssessmentRepository;
         private readonly IScheduledAssessmentService _scheduledAssessmentService;
-        private readonly ILogger<RolesController> _logger;
-        public ScheduledAssessmentController(IScheduledAssessmentRepository scheduledAssessmentRepository, IScheduledAssessmentService scheduledAssessmentService, ILogger<RolesController> logger)
+        private readonly ILogger<ScheduledAssessmentController> _logger;
+        public ScheduledAssessmentController(IScheduledAssessmentRepository scheduledAssessmentRepository, IScheduledAssessmentService scheduledAssessmentService, ILogger<ScheduledAssessmentController> logger)
         {
             _scheduledAssessmentRepository = scheduledAssessmentRepository;
             _scheduledAssessmentService = scheduledAssessmentService;
