@@ -10,7 +10,7 @@ using System;
 using AutoMapper;
 using OnlineAssessmentTool.Repository.IRepository;
 
-namespace OnlineAssessmentToolTestProject
+namespace OnlineAssessmentToolNUnitTest
 {
     [TestFixture]
     public class UserNUnitTest
