@@ -223,6 +223,10 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<IActionResult> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
         {
             var dtos = await _scheduledAssessmentRepository.GetAssessmentTableByScheduledAssessmentId(scheduledAssessmentId);
+            if (dtos == null)
+            {
+                return NotFound();
+            }
             return Ok(dtos);
         }
 

@@ -154,7 +154,7 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<ActionResult<List<TraineeAssessmentTableDTO>>> GetTraineeAssessmentDetails(int scheduledAssessmentId)
         {
             var result = await _assessmentRepository.GetTraineeAssessmentDetails(scheduledAssessmentId);
-            if (result == null)
+            if (result == null || !result.Any())
             {
                 return NotFound();
             }

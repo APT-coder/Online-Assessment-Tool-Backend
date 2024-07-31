@@ -65,6 +65,20 @@ namespace OnlineAssessmentTool.Controllers
         [HttpPost("{userId}")]
         public async Task<IActionResult> AssessmentSubmit([FromBody] List<PostAssessmentDTO> questions, int userId)
         {
+            if (questions == null)
+            {
+                return BadRequest("Questions list cannot be null.");
+            }
+
+            if (!questions.Any())
+            {
+                return BadRequest("No questions provided for assessment.");
+            }
+
+            if (userId <= 0)
+            {
+                return BadRequest("Invalid user ID.");
+            }
             try
             {
                 _logger.LogInformation("Submitting assessment for user {userId}.", userId);
