@@ -23,7 +23,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
             {
                 options.AddPolicy("AllowLocalhost",
                     builder => builder
-                        .WithOrigins("http://localhost:4200")
+                        .WithOrigins("http://localhost:4201", "http://localhost:4200")
                         .AllowAnyHeader()
                         .AllowAnyMethod());
             });
