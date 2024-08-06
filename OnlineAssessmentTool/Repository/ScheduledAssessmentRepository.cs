@@ -39,7 +39,6 @@ namespace OnlineAssessmentTool.Repository
 
         public async Task<IEnumerable<TraineeStatusDTO>> GetAbsentStudentsAsync(int scheduledAssessmentId)
         {
-            // Retrieve the batch ID for the given scheduled assessment
             var batchId = await _context.ScheduledAssessments
                 .Where(sa => sa.ScheduledAssessmentId == scheduledAssessmentId)
                 .Select(sa => sa.BatchId)
@@ -94,7 +93,7 @@ namespace OnlineAssessmentTool.Repository
                             Option4 = o.Option4,
                             CorrectAnswer = o.CorrectAnswer
                         })
-                        .FirstOrDefault() // Assuming you need the options for each question
+                        .FirstOrDefault()
                 })
                 .ToListAsync();
 
@@ -129,7 +128,7 @@ namespace OnlineAssessmentTool.Repository
         public async Task<List<GetScheduledAssessmentDTO>> GetScheduledAssessmentsByUserIdAsync(int userId)
         {
             var traineeBatchIds = await _context.Trainees
-                .Where(t => t.UserId == userId)
+                .Where(t => t.TraineeId == userId)
                 .Select(t => t.BatchId)
                 .ToListAsync();
 
@@ -139,6 +138,7 @@ namespace OnlineAssessmentTool.Repository
                 {
                     BatchId = sa.BatchId,
                     AssessmentId = sa.AssessmentId,
+                    ScheduledAssessmentId = sa.ScheduledAssessmentId,
                     AssessmentName = _context.Assessments
                         .Where(a => a.AssessmentId == sa.AssessmentId)
                         .Select(a => a.AssessmentName)
@@ -176,6 +176,54 @@ namespace OnlineAssessmentTool.Repository
                                 }).FirstOrDefaultAsync();
 
             return result;
+        }
+
+        public async Task<ScheduledAssessmentDetailsDTO> GetScheduledAssessmentDetailsAsync(int scheduledAssessmentId)
+        {
+            var scheduledAssessment = await _context.ScheduledAssessments
+                .FirstOrDefaultAsync(sa => sa.ScheduledAssessmentId == scheduledAssessmentId);
+
+            if (scheduledAssessment == null)
+            {
+                throw new Exception("Scheduled assessment not found");
+            }
+
+            var assessmentId = scheduledAssessment.AssessmentId;
+
+            var assessment = await _context.Assessments
+                .FirstOrDefaultAsync(a => a.AssessmentId == assessmentId);
+
+            if (assessment == null)
+            {
+                throw new Exception("Assessment not found");
+            }
+
+            var maximumScore = assessment.TotalScore ?? 0;
+
+            var batchId = scheduledAssessment.BatchId;
+
+            var totalTrainees = await _context.batch
+                .Where(b => b.batchid == batchId)
+                .SelectMany(b => b.Trainees)
+                .CountAsync();
+
+            var traineesAttended = await _context.AssessmentScores
+                .Where(aa => aa.ScheduledAssessmentId == scheduledAssessmentId)
+                .Select(aa => aa.TraineeId)
+                .Distinct()
+                .CountAsync();
+
+            var absentees = totalTrainees - traineesAttended;
+
+            return new ScheduledAssessmentDetailsDTO
+            {
+                ScheduledAssessmentId = scheduledAssessmentId,
+                MaximumScore = maximumScore,
+                TotalTrainees = totalTrainees,
+                TraineesAttended = traineesAttended,
+                Absentees = absentees,
+                AssessmentDate = scheduledAssessment.ScheduledDate
+            };
         }
     }
 }

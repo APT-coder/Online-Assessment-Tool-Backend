@@ -154,7 +154,7 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<ActionResult<List<TraineeAssessmentTableDTO>>> GetTraineeAssessmentDetails(int scheduledAssessmentId)
         {
             var result = await _assessmentRepository.GetTraineeAssessmentDetails(scheduledAssessmentId);
-            if (result == null)
+            if (result == null || !result.Any())
             {
                 return NotFound();
             }
@@ -230,6 +230,7 @@ namespace OnlineAssessmentTool.Controllers
                 _logger.LogWarning("Assessment with id {assessmentId} not found", assessmentId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
+                response.Message.Add("Assessment not found."); // Ensure this line is present
                 return NotFound(response);
             }
             existingAssessment.TotalScore = assessmentDTO.TotalScore;
