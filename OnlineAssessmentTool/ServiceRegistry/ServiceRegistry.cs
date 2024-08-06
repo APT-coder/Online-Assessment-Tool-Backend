@@ -67,6 +67,8 @@ namespace OnlineAssessmentTool.ServiceRegistry
                 options.UseNpgsql(connectionString).EnableSensitiveDataLogging()
                                   .EnableDetailedErrors();
             });
+
+            services.AddHostedService<AssessmentStatusUpdater>();
         }
     }
 }
