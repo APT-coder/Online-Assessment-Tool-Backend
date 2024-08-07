@@ -8,6 +8,8 @@
         public int TraineesAttended { get; set; }
         public int Absentees { get; set; }
         public DateTime AssessmentDate { get; set; }
+        public string AssessmentName { get; set; }
+        public string BatchName { get; set; }
     }
 
 }

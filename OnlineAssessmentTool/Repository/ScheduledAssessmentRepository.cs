@@ -215,6 +215,13 @@ namespace OnlineAssessmentTool.Repository
 
             var absentees = totalTrainees - traineesAttended;
 
+            var assessmentName = assessment.AssessmentName;
+
+            var batchDetails = await _context.batch
+                .FirstOrDefaultAsync(b => b.batchid == batchId);
+
+            var batchName = batchDetails.batchname;
+
             return new ScheduledAssessmentDetailsDTO
             {
                 ScheduledAssessmentId = scheduledAssessmentId,
@@ -222,7 +229,9 @@ namespace OnlineAssessmentTool.Repository
                 TotalTrainees = totalTrainees,
                 TraineesAttended = traineesAttended,
                 Absentees = absentees,
-                AssessmentDate = scheduledAssessment.ScheduledDate
+                AssessmentDate = scheduledAssessment.ScheduledDate,
+                AssessmentName = assessmentName,
+                BatchName = batchName
             };
         }
     }
