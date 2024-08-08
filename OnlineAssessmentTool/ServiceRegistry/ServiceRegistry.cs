@@ -4,7 +4,9 @@ using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
+using OnlineAssessmentTool.Models.DTO;
 using System;
+using System.Net.Mail;
 using System.Text.Json.Serialization;
 
 namespace OnlineAssessmentTool.ServiceRegistry
@@ -59,6 +61,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IIlpRepository, IlpIntegrationRepository>();
             services.AddScoped<ILPIntegrationService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddTransient<IEmailService, EmailService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
 
@@ -71,4 +74,4 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddHostedService<AssessmentStatusUpdater>();
         }
     }
-}
+}       
