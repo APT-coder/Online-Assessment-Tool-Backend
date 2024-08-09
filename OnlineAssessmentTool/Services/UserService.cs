@@ -175,6 +175,22 @@ public class UserService : IUserService
         return userDetails;
     }
 
+    public async Task<UserDetailsDTO> GetUserEmailByUsernameAsync(string username)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Username == username);
+
+        if (user == null)
+            return null;
+
+        var userDetails = new UserDetailsDTO
+        {
+            Email = user.Email
+        };
+
+        return userDetails;
+    }
+
     public async Task<bool> UpdateUserAsync(
     CreateUserDTO createUserDto,
     TrainerDTO trainerDto = null,
