@@ -18,7 +18,7 @@ namespace OnlineAssessmentTool.Controllers
         [HttpPost("SendMail")]
         public async Task<IActionResult> SendMail([FromBody] EmailRequestDTO emailRequest)
         {
-            await _emailService.SendEmailAsync(emailRequest.ToEmail, emailRequest.Subject, emailRequest.Body);
+            await _emailService.SendEmailAsync(emailRequest.ToEmail, emailRequest.Subject, emailRequest.Body, emailRequest.Attachments);
             return Ok("Email sent successfully!");
         }
     }
