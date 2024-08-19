@@ -42,36 +42,39 @@ public class QuestionService : IQuestionService
     }
 
     public async Task<Question> UpdateQuestionAsync(int questionId, QuestionDTO questionDTO)
+{
+    var existingQuestion = await _questionRepository.GetQuestionByIdAsync(questionId);
+
+    if (existingQuestion != null)
     {
-        var existingQuestion = await _questionRepository.GetQuestionByIdAsync(questionId);
+        // Update basic question properties
+        existingQuestion.QuestionText = questionDTO.QuestionText;
+        existingQuestion.QuestionType = questionDTO.QuestionType;
+        existingQuestion.Points = questionDTO.Points;
 
-        if (existingQuestion != null)
+        // Update options and correct answers
+        var existingOptions = existingQuestion.QuestionOptions.ToList();
+
+        foreach (var dtoOption in questionDTO.QuestionOptions)
         {
-            existingQuestion.QuestionText = questionDTO.QuestionText;
-            existingQuestion.QuestionType = questionDTO.QuestionType;
-            existingQuestion.Points = questionDTO.Points;
+            var optionId = existingQuestion.QuestionOptions.FirstOrDefault()?.QuestionOptionId;
+            var existingOption = existingOptions.FirstOrDefault(o => o.QuestionOptionId == optionId);
 
-            var existingOptions = existingQuestion.QuestionOptions.ToList();
-
-            foreach (var dtoOption in questionDTO.QuestionOptions)
+            if (existingOption != null)
             {
-
-                var optionId = existingQuestion.QuestionOptions.FirstOrDefault()?.QuestionOptionId;
-                var existingOption = existingOptions.FirstOrDefault(o => o.QuestionOptionId == optionId);
-
-                existingOption.Option1 = dtoOption.Option1;
-                existingOption.Option2 = dtoOption.Option2;
-                existingOption.Option3 = dtoOption.Option3;
-                existingOption.Option4 = dtoOption.Option4;
-                existingOption.CorrectAnswer = dtoOption.CorrectAnswer;
+                existingOption.Options = dtoOption.Options;
+                existingOption.CorrectAnswers = dtoOption.CorrectAnswers;
             }
-
-            await _questionRepository.UpdateQuestionAsync(existingQuestion);
-            await _questionRepository.SaveAsync();
-            return existingQuestion;
         }
-        return null;
+        await _questionRepository.UpdateQuestionAsync(existingQuestion);
+        await _questionRepository.SaveAsync();
+
+        return existingQuestion;
     }
+
+    return null;
+}
+
 
     public async Task DeleteQuestionAsync(int questionId)
     {

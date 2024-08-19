@@ -161,10 +161,6 @@ namespace OnlineAssessmentToolNUnitTest
             Assert.AreEqual("Error retrieving absent students from database.", apiResponse.Message.First());
         }
 
-
-
-
-
         [Test]
         public async Task GetTraineeAnswerDetails_ReturnsCorrectData()
         {
@@ -173,28 +169,24 @@ namespace OnlineAssessmentToolNUnitTest
             int scheduledAssessmentId = 1;
 
             var traineeAnswerDetails = new List<TraineeAnswerDetailDTO>
+    {
+        new TraineeAnswerDetailDTO
+        {
+            QuestionId = 1,
+            Answer = "Paris",
+            IsCorrect = true,
+            Score = 10,
+            QuestionText = "What is the capital of France?",
+            QuestionType = "MCQ",
+            Points = 10,
+            QuestionOptions = new QuestionOptionDTO
             {
-                new TraineeAnswerDetailDTO
-                {
-                    QuestionId = 1,
-                    Answer = "Paris",
-                    IsCorrect = true,
-                    Score = 10,
-                    QuestionText = "What is the capital of France?",
-                    QuestionType = "MCQ",
-                    Points = 10,
-                    QuestionOptions = new QuestionOptionDTO
-                    {
-                        Option1 = "Paris",
-                        Option2 = "London",
-                        Option3 = "Berlin",
-                        Option4 = "Madrid",
-                        CorrectAnswer = "Paris"
-                    }
-                }
-            };
+                Options = new List<string> { "Paris", "London", "Berlin", "Madrid" },
+                CorrectAnswers = new List<string> { "Paris" }
+            }
+        }
+    };
 
-            
             _mockScheduledAssessmentService
                 .Setup(service => service.GetTraineeAnswerDetailsAsync(traineeId, scheduledAssessmentId))
                 .ReturnsAsync(traineeAnswerDetails);
@@ -203,18 +195,31 @@ namespace OnlineAssessmentToolNUnitTest
             var actionResult = await _controller.GetTraineeAnswerDetails(traineeId, scheduledAssessmentId);
 
             // Assert
-            var objectResult = actionResult as ObjectResult; 
-       
+            var objectResult = actionResult as ObjectResult;
+
+            Assert.IsNotNull(objectResult);
+            Assert.AreEqual((int)HttpStatusCode.OK, objectResult.StatusCode);
+
             var response = objectResult.Value as ApiResponse;
-            Assert.IsNotNull(response); 
+            Assert.IsNotNull(response);
             Assert.IsTrue(response.IsSuccess);
-            var details = response.Result as IEnumerable<TraineeAnswerDetailDTO>; 
-            Assert.IsNotNull(details); 
-            Assert.AreEqual(1, details.Count()); 
-            Assert.AreEqual("What is the capital of France?", details.First().QuestionText); 
-            Assert.AreEqual("MCQ", details.First().QuestionType); 
-            Assert.AreEqual("Paris", details.First().QuestionOptions.CorrectAnswer);
+
+            var details = response.Result as IEnumerable<TraineeAnswerDetailDTO>;
+            Assert.IsNotNull(details);
+            Assert.AreEqual(1, details.Count());
+            var firstDetail = details.First();
+
+            Assert.AreEqual("What is the capital of France?", firstDetail.QuestionText);
+            Assert.AreEqual("MCQ", firstDetail.QuestionType);
+            Assert.AreEqual("Paris", firstDetail.Answer);
+
+            Assert.IsNotNull(firstDetail.QuestionOptions);
+            Assert.AreEqual(4, firstDetail.QuestionOptions.Options.Count);
+            Assert.AreEqual("Paris", firstDetail.QuestionOptions.Options.First());
+            Assert.AreEqual(1, firstDetail.QuestionOptions.CorrectAnswers.Count);
+            Assert.AreEqual("Paris", firstDetail.QuestionOptions.CorrectAnswers.First());
         }
+
 
         [Test]
         public async Task GetTraineeAnswerDetails_ReturnsInternalServerError_OnException()
