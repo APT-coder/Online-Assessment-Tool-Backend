@@ -25,6 +25,17 @@ namespace OnlineAssessmentToolNUnitTest
             _controller = new AssessmentScoreController(_mockAssessmentScoreRepository.Object, null, null);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            // Dispose of _controller if it implements IDisposable
+            if (_controller is IDisposable disposableController)
+            {
+                disposableController.Dispose();
+                _controller = null;
+            }
+        }
+
         [Test]
         public async Task GetAssessmentScoresByTraineeId_ReturnsOkResult_WithScores()
         {

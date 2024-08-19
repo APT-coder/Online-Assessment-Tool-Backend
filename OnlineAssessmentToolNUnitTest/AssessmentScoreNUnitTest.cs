@@ -29,6 +29,16 @@ namespace OnlineAssessmentToolNUnitTest
             _controller = new AssessmentScoreController(_mockRepository.Object, _mockService.Object, _mockLogger.Object);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            if (_controller != null)
+            {
+                _controller.Dispose();
+                _controller = null;
+            }
+        }
+
         [Test]
         public async Task GetScoreDistribution_ReturnsOkResult_WithScoreDistribution()
         {
