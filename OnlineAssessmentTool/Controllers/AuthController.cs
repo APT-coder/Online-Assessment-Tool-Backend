@@ -4,6 +4,7 @@ using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
 using OnlineAssessmentTool.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -15,13 +16,15 @@ namespace OnlineAssessmentTool.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
+        private readonly IJwtService _jwtService;
 
-        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger)
+        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger, IJwtService jwtService)
         {
             _dbContext = dbContext;
             _userRepository = userRepository;
             _userService = userService;
             _logger = logger;
+            _jwtService = jwtService;
         }
 
         [HttpGet("getUserRole/{token}")]
@@ -33,11 +36,9 @@ namespace OnlineAssessmentTool.Controllers
                 return NotFound("Token not found");
             }
 
-            var handler = new JwtSecurityTokenHandler();
-            var jsonToken = handler.ReadToken(token);
-            var tokenS = jsonToken as JwtSecurityToken;
-            if (tokenS != null)
+            try
             {
+                var tokenS = _jwtService.ReadJwtToken(token);
                 var claims = tokenS.Claims;
                 var upn = claims.FirstOrDefault(c => c.Type == "upn")?.Value;
                 var appName = claims.FirstOrDefault(c => c.Type == "app_displayname")?.Value;
@@ -58,14 +59,14 @@ namespace OnlineAssessmentTool.Controllers
                     results.Add("UserPhone", user.Phone);
                     results.Add("UserAdmin", user.IsAdmin);
                     results.Add("UserType", user.UserType);
-                    if(user.UserType == UserType.Trainer)
+                    if (user.UserType == UserType.Trainer)
                     {
                         results.Add("TrainerId", user.Trainer.TrainerId);
                         results.Add("UserBatch", user.Trainer.TrainerBatch);
                         results.Add("UserRole", user.Trainer.Role);
                         results.Add("UserPermissions", user.Trainer.Role.Permissions);
                     }
-                    else if(user.UserType == UserType.Trainee)
+                    else if (user.UserType == UserType.Trainee)
                     {
                         results.Add("TraineeId", user.Trainee.TraineeId);
                         results.Add("UserBatch", user.Trainee.Batch);
@@ -79,9 +80,15 @@ namespace OnlineAssessmentTool.Controllers
                     return NotFound($"{upn} is not found in Employees database.");
                 }
             }
-            else
+            catch (SecurityTokenMalformedException)
             {
+                _logger.LogError("Invalid token format");
                 return BadRequest("Token cannot be converted to JwtSecurityToken");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception: {ex.Message}");
+                return StatusCode(500, "An error occurred while processing the request");
             }
         }
     }

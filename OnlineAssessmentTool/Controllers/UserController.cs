@@ -151,5 +151,28 @@ namespace OnlineAssessmentTool.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
             }
         }
+
+        [HttpGet("details/{username}")]
+        public async Task<IActionResult> GetUserEmailByUserName(string username)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user details for username: {username}", username);
+                var userDetails = await _userService.GetUserEmailByUsernameAsync(username);
+
+                if (userDetails == null)
+                {
+                    _logger.LogWarning("No user details found for username: {username}", username);
+                    return NotFound();
+                }
+
+                return Ok(userDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching user details for email: {username}", username);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
+            }
+        }
     }
 }

@@ -4,7 +4,11 @@ using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
+using OnlineAssessmentTool.Models.DTO;
+using System;
+using System.Net.Mail;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 namespace OnlineAssessmentTool.ServiceRegistry
 {
@@ -23,14 +27,17 @@ namespace OnlineAssessmentTool.ServiceRegistry
             {
                 options.AddPolicy("AllowLocalhost",
                     builder => builder
-                        .WithOrigins("http://localhost:4200")
+                        .WithOrigins("http://localhost:4201", "http://localhost:4200")
                         .AllowAnyHeader()
                         .AllowAnyMethod());
             });
 
+            DotNetEnv.Env.Load();
+
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            var connectionString = Environment.GetEnvironmentVariable("POSTGRESQL_CONNECTION_STRING");
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();
@@ -54,14 +61,20 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IAssessmentPostService, AssessmentPostService>();
             services.AddScoped<IIlpRepository, IlpIntegrationRepository>();
             services.AddScoped<ILPIntegrationService>();
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddTransient<IEmailService, EmailService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
+
+            NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
 
             services.AddDbContext<APIContext>(options =>
             {
                 options.UseNpgsql(connectionString).EnableSensitiveDataLogging()
                                   .EnableDetailedErrors();
             });
+
+            services.AddHostedService<AssessmentStatusUpdater>();
         }
     }
-}
+}       

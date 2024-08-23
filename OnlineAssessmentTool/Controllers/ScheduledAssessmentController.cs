@@ -16,8 +16,8 @@ namespace OnlineAssessmentTool.Controllers
     {
         private readonly IScheduledAssessmentRepository _scheduledAssessmentRepository;
         private readonly IScheduledAssessmentService _scheduledAssessmentService;
-        private readonly ILogger<RolesController> _logger;
-        public ScheduledAssessmentController(IScheduledAssessmentRepository scheduledAssessmentRepository, IScheduledAssessmentService scheduledAssessmentService, ILogger<RolesController> logger)
+        private readonly ILogger<ScheduledAssessmentController> _logger;
+        public ScheduledAssessmentController(IScheduledAssessmentRepository scheduledAssessmentRepository, IScheduledAssessmentService scheduledAssessmentService, ILogger<ScheduledAssessmentController> logger)
         {
             _scheduledAssessmentRepository = scheduledAssessmentRepository;
             _scheduledAssessmentService = scheduledAssessmentService;
@@ -223,7 +223,18 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<IActionResult> GetAssessmentTableByScheduledAssessmentId(int scheduledAssessmentId)
         {
             var dtos = await _scheduledAssessmentRepository.GetAssessmentTableByScheduledAssessmentId(scheduledAssessmentId);
+            if (dtos == null)
+            {
+                return NotFound();
+            }
             return Ok(dtos);
+        }
+
+        [HttpGet("{scheduledAssessmentId}")]
+        public async Task<ActionResult<ScheduledAssessmentDetailsDTO>> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        {
+            var result = await _scheduledAssessmentService.GetScheduledAssessmentDetailsAsync(scheduledAssessmentId);
+            return Ok(result);
         }
 
         [HttpPost]

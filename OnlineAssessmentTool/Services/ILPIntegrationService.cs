@@ -17,9 +17,9 @@ namespace OnlineAssessmentTool.Services
         {
             return await _ilpRepository.GetAverageAndTotalScore(traineeEmail, scheduledAssessmentId);
         }
-        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(string batchname)
         {
-            return await _ilpRepository.GetScheduledAssessmentDetails(scheduledAssessmentId);
+            return await _ilpRepository.GetScheduledAssessmentDetails(batchname);
         }
     }
 }

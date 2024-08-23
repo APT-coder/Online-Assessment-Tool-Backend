@@ -50,14 +50,14 @@ namespace OnlineAssessmentTool.Repository
 
             return (assessmentScore.AvergeScore, assessment.TotalScore ?? 0);
         }
-        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(int scheduledAssessmentId)
+        public async Task<IlpIntegrationScheduledAssessmentDTO> GetScheduledAssessmentDetails(string batchname)
         {
             var result = await (from sa in _dbContext.ScheduledAssessments
                                 join a in _dbContext.Assessments on sa.AssessmentId equals a.AssessmentId
                                 join b in _dbContext.batch on sa.BatchId equals b.batchid
                                 join t in _dbContext.Trainers on a.CreatedBy equals t.TrainerId
                                 join u in _dbContext.Users on t.UserId equals u.UserId
-                                where sa.ScheduledAssessmentId == scheduledAssessmentId
+                                where b.batchname == batchname
                                 select new IlpIntegrationScheduledAssessmentDTO
                                 {
                                     BatchName = b.batchname,

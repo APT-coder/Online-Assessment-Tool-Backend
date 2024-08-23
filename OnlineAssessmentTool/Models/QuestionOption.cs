@@ -10,12 +10,10 @@ namespace OnlineAssessmentTool.Models
         public int QuestionOptionId { get; set; }
         [ForeignKey("Question")]
         public int QuestionId { get; set; }
-        public string Option1 { get; set; }
-        public string Option2 { get; set; }
-        public string Option3 { get; set; }
-        public string Option4 { get; set; }
-        [Required]
-        public string CorrectAnswer { get; set; }
+        [Column(TypeName = "jsonb")]
+        public List<string> Options { get; set; }
+        [Column(TypeName = "jsonb")]
+        public List<string> CorrectAnswers { get; set; }
         [Required]
         public Question Question { get; set; }
     }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
@@ -57,7 +58,6 @@ public class UserService : IUserService
                                 Trainer_id = trainer.TrainerId,
                                 Batch_id = batchId
                             };
-
                             await _trainerBatchRepository.AddAsync(trainerBatch);
                         }
                         await _trainerBatchRepository.SaveAsync();
@@ -74,14 +74,18 @@ public class UserService : IUserService
                 await transaction.CommitAsync();
                 return true;
             }
-            catch (Exception)
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException postgresEx && postgresEx.SqlState == "23505")
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 throw;
             }
         }
     }
-
     public async Task<List<Users>> GetUsersByRoleNameAsync(string roleName)
     {
         var lowerRoleName = roleName.ToLower();
@@ -167,6 +171,22 @@ public class UserService : IUserService
 
             userDetails.Trainee = trainee;
         }
+
+        return userDetails;
+    }
+
+    public async Task<UserDetailsDTO> GetUserEmailByUsernameAsync(string username)
+    {
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Username == username);
+
+        if (user == null)
+            return null;
+
+        var userDetails = new UserDetailsDTO
+        {
+            Email = user.Email
+        };
 
         return userDetails;
     }

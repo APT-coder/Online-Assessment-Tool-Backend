@@ -14,6 +14,7 @@ namespace OnlineAssessmentTool.Services.IService
         Task<List<Users>> GetUsersByRoleNameAsync(string roleName);
         public Task DeleteUserAsync(int userId);
         public Task<UserDetailsDTO> GetUserDetailsByEmailAsync(string email);
+        public Task<UserDetailsDTO> GetUserEmailByUsernameAsync(string email);
         public Task<bool> UpdateUserAsync(
            CreateUserDTO createUserDto,
            TrainerDTO trainerDto = null,

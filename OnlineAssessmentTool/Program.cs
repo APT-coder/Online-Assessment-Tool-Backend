@@ -6,8 +6,11 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Validations;
 using FluentValidation;
+using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
 /*Log.Logger = new LoggerConfiguration()
 .WriteTo.File("logs\\myapp.log", rollingInterval: RollingInterval.Day)
 .CreateLogger();*/
@@ -28,7 +31,18 @@ builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfigura
 
 builder.Services.AddValidatorsFromAssemblyContaining<TestValidator>();
 
+builder.Services.AddFluentEmail(smtpSettings.FromEmail, smtpSettings.FromName)
+    .AddRazorRenderer()
+    .AddSmtpSender(new SmtpClient(smtpSettings.Host)
+    {
+        Port = smtpSettings.Port,
+        Credentials = new System.Net.NetworkCredential(smtpSettings.UserName, smtpSettings.Password),
+        EnableSsl = true,
 
+
+        DeliveryMethod = SmtpDeliveryMethod.Network,
+        UseDefaultCredentials = false,
+    });
 
 builder.Services.ConfigureServices(builder.Configuration);
 

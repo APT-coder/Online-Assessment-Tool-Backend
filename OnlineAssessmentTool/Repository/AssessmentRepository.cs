@@ -39,6 +39,7 @@ namespace OnlineAssessmentTool.Repository
                           join t in _context.Trainers on a.CreatedBy equals t.TrainerId
                           join u in _context.Users on t.UserId equals u.UserId
                           join b in _context.batch on sa.BatchId equals b.batchid // Correct table name
+                          orderby sa.ScheduledDate descending
                           group new { sa, a, t, u, b } by new
                           {
                               sa.ScheduledAssessmentId,
@@ -108,6 +109,7 @@ namespace OnlineAssessmentTool.Repository
                          join b in _context.batch on sa.BatchId equals b.batchid
                          join tb in _context.TrainerBatches on b.batchid equals tb.Batch_id
                          where tb.Trainer_id == trainerId
+                         orderby sa.ScheduledDate descending
                          select new AssessmentTableDTO
                          {
                              ScheduledAssessmentId = sa.ScheduledAssessmentId,
