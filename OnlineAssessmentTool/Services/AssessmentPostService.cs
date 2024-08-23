@@ -31,21 +31,24 @@ namespace OnlineAssessmentTool.Services
 
                 if (questionOptions != null)
                 {
-                    
-                    var normalizedAnswered = question.Answered.Replace(" ", "").ToLower();
-                    var normalizedCorrectAnswer = questionOptions.CorrectAnswer.Replace(" ", "").ToLower();
 
-                    
+                    var normalizedAnswered = question.Answered.Replace(" ", "").ToLower();
+                    var normalizedCorrectAnswers = questionOptions.CorrectAnswers
+                        .Select(answer => answer.Replace(" ", "").ToLower())
+                        .ToList();
+
+
+                    bool isCorrect = normalizedCorrectAnswers.Contains(normalizedAnswered);
                     var traineeAnswer = new TraineeAnswer
                     {
                         ScheduledAssessmentId = question.AssessmentId,
                         TraineeId = userId,
                         QuestionId = question.QuestionId,
                         Answer = question.Answered,
-                        IsCorrect = normalizedAnswered == normalizedCorrectAnswer,
-                        Score = normalizedAnswered == normalizedCorrectAnswer ? question.Points : 0
+                        IsCorrect = isCorrect,
+                        Score = isCorrect ? question.Points : 0
                     };
-                    
+
                     totalScore += traineeAnswer.Score;
                     traineeAnswers.Add(traineeAnswer);
                     await _traineeAnswerRepository.AddAsync(traineeAnswer);

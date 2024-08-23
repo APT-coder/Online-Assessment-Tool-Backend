@@ -8,6 +8,7 @@ using OnlineAssessmentTool.Models.DTO;
 using System;
 using System.Net.Mail;
 using System.Text.Json.Serialization;
+using Npgsql;
 
 namespace OnlineAssessmentTool.ServiceRegistry
 {
@@ -64,6 +65,8 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddTransient<IEmailService, EmailService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
+
+            NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
 
             services.AddDbContext<APIContext>(options =>
             {

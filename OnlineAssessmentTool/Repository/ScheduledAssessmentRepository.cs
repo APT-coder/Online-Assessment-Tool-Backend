@@ -87,11 +87,8 @@ namespace OnlineAssessmentTool.Repository
                         .Where(o => o.QuestionId == ta.QuestionId)
                         .Select(o => new QuestionOptionDTO
                         {
-                            Option1 = o.Option1,
-                            Option2 = o.Option2,
-                            Option3 = o.Option3,
-                            Option4 = o.Option4,
-                            CorrectAnswer = o.CorrectAnswer
+                            Options = o.Options,
+                            CorrectAnswers = o.CorrectAnswers
                         })
                         .FirstOrDefault()
                 })
