@@ -23,17 +23,24 @@ namespace OnlineAssessmentTool.Services
                 {
                     var context = scope.ServiceProvider.GetRequiredService<APIContext>();
                     var now = DateTime.UtcNow;
-                    var assessmentsToUpdate = context.ScheduledAssessments
+                    var currentDate = now.Date;
+                    var currentTime = now.TimeOfDay;
+
+                    try
+                    {
+                        var assessmentsToUpdate = context.ScheduledAssessments
                         .Where(a => a.EndTime <= now && a.Status == 0)
                         .ToList();
 
-                    foreach (var assessment in assessmentsToUpdate)
-                    {
-                        assessment.Status = (Models.AssessmentStatus)3;
-                        context.ScheduledAssessments.Update(assessment);
-                    }
+                        foreach (var assessment in assessmentsToUpdate)
+                        {
+                            assessment.Status = (Models.AssessmentStatus)3;
+                            context.ScheduledAssessments.Update(assessment);
+                        }
 
-                    await context.SaveChangesAsync();
+                        await context.SaveChangesAsync();
+                    }
+                    catch (Exception ex) { }
                 }
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken); // Check every minute
