@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using OnlineAssessmentTool.Data;
@@ -6,6 +8,7 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
+using System.Security.Cryptography;
 
 public class UserService : IUserService
 {
@@ -15,6 +18,7 @@ public class UserService : IUserService
     private readonly ITrainerBatchRepository _trainerBatchRepository;
     private readonly IMapper _mapper;
     private readonly APIContext _context;
+    private readonly PasswordHasher<object> _passwordHasher = new PasswordHasher<object>();
 
     public UserService(
         IUserRepository userRepository,
@@ -46,6 +50,10 @@ public class UserService : IUserService
                 {
                     var trainer = _mapper.Map<Trainer>(trainerDto);
                     trainer.UserId = user.UserId;
+                    trainer.Password = _passwordHasher.HashPassword(null, trainerDto.Password);
+                    trainer.IsActive = false;
+                    trainer.LastPasswordReset = DateTime.UtcNow;
+
                     await _trainerRepository.AddAsync(trainer);
                     await _trainerRepository.SaveAsync();
 
@@ -262,6 +270,94 @@ public class UserService : IUserService
 
                 await transaction.CommitAsync();
                 return true;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+
+    public async Task<bool> ValidateUserAsync(string email, string password)
+    {
+        try
+        {
+            var user = await GetUserDetailsByEmailAsync(email);
+            if (user == null)
+            {
+                return false;
+            }
+            bool isValid = ValidatePassword(user.Trainer.Password, password);
+            return isValid;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+    public async Task<bool> IsUserActive(string email)
+    {
+        try
+        {
+            var user = await GetUserDetailsByEmailAsync(email);
+            if (user.Trainer.IsActive == false)
+            {
+                return false;
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+
+    public bool ValidatePassword(string hashedPassword, string providedPassword)
+    {
+        var result = _passwordHasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
+        return result == PasswordVerificationResult.Success;
+    }
+
+    public async Task<ApiResponse> UpdateTrainerPasswordAsync(UpdateTrainerPasswordDTO updateTrainerPasswordDTO)
+    {
+        var apiResponse = new ApiResponse();
+        using (var transaction = await _userRepository.BeginTransactionAsync())
+        {
+            try
+            {
+                var user = await GetUserDetailsByEmailAsync(updateTrainerPasswordDTO.Email);
+                if (user == null)
+                {
+                    apiResponse.IsSuccess = false;
+                    apiResponse.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    apiResponse.Result = "User with given mail id not found";
+                    return apiResponse;
+                }
+
+                else if (user.UserType == UserType.Trainer && updateTrainerPasswordDTO != null)
+                {
+                    var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
+                    if (trainer != null)
+                    {
+                        trainer.Password = _passwordHasher.HashPassword(null, updateTrainerPasswordDTO.Password);
+                        if (trainer.IsActive == false)
+                        {
+                            trainer.IsActive = true;
+                        }
+                        trainer.LastPasswordReset = DateTime.UtcNow;
+
+                        await _trainerRepository.UpdateAsync(trainer);
+                        await _trainerRepository.SaveAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                apiResponse.IsSuccess = true;
+                apiResponse.StatusCode = System.Net.HttpStatusCode.Accepted;
+                apiResponse.Result = "Password updated successfully";
+                return apiResponse;
             }
             catch (Exception)
             {

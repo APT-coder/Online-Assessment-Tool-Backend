@@ -5,6 +5,8 @@ using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
 using OnlineAssessmentTool.Models;
 using Microsoft.IdentityModel.Tokens;
+using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Services;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -16,19 +18,19 @@ namespace OnlineAssessmentTool.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
-        private readonly IJwtService _jwtService;
+        private readonly IAuthService _authService;
 
-        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger, IJwtService jwtService)
+        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger, IAuthService authService)
         {
             _dbContext = dbContext;
             _userRepository = userRepository;
             _userService = userService;
             _logger = logger;
-            _jwtService = jwtService;
+            _authService = authService;
         }
 
         [HttpGet("getUserRole/{token}")]
-        public async Task<IActionResult> GetUserRoleAsync(string token)
+        public async Task<IActionResult> AzureSSOLogin(string token)
         {
             Dictionary<string, dynamic> results = new Dictionary<string, dynamic>();
             if (string.IsNullOrEmpty(token))
@@ -38,7 +40,7 @@ namespace OnlineAssessmentTool.Controllers
 
             try
             {
-                var tokenS = _jwtService.ReadJwtToken(token);
+                var tokenS = _authService.ReadJwtToken(token);
                 var claims = tokenS.Claims;
                 var upn = claims.FirstOrDefault(c => c.Type == "upn")?.Value;
                 var appName = claims.FirstOrDefault(c => c.Type == "app_displayname")?.Value;
@@ -90,6 +92,20 @@ namespace OnlineAssessmentTool.Controllers
                 _logger.LogError($"Exception: {ex.Message}");
                 return StatusCode(500, "An error occurred while processing the request");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExternalTrainerLogin([FromBody] LoginRequestDTO loginRequest)
+        {
+            var loginResponse = await _authService.AuthenticateUser(loginRequest);
+            return Ok(loginResponse);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> TrainerResetPassword([FromBody] UpdateTrainerPasswordDTO updateTrainerPasswordDTO)
+        {
+            var resetPasswordResponse = await _userService.UpdateTrainerPasswordAsync(updateTrainerPasswordDTO);
+            return Ok(resetPasswordResponse);
         }
     }
 }
