@@ -66,7 +66,8 @@ namespace OnlineAssessmentTool.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var claims = new[]
             {
-                new Claim(ClaimTypes.Upn, user.Email.ToString())
+                new Claim("upn", user.Email.ToString()),
+                new Claim("app_displayname", "Knowlix")
             };
 
             var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWTSecretKey")));
@@ -82,6 +83,12 @@ namespace OnlineAssessmentTool.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        public string GenerateOtp()
+        {
+            var random = new Random();
+            return random.Next(100000, 999999).ToString();
         }
     }
 }

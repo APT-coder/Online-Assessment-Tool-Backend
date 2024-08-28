@@ -30,7 +30,7 @@ namespace OnlineAssessmentTool.Services
                     try
                     {
                         var passwordsToUpdate = context.Trainers
-                        .Where(a => a.LastPasswordReset <= now.AddDays(30))
+                        .Where(a => a.LastPasswordReset >= now.AddDays(30))
                         .ToList();
 
                         foreach (var user in passwordsToUpdate)

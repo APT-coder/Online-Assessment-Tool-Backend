@@ -7,6 +7,8 @@ using OnlineAssessmentTool.Models;
 using Microsoft.IdentityModel.Tokens;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Services;
+using FluentEmail.Core;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -19,14 +21,18 @@ namespace OnlineAssessmentTool.Controllers
         private readonly IUserService _userService;
         private readonly ILogger<AuthController> _logger;
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
+        private readonly IMemoryCache _cache;
 
-        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger, IAuthService authService)
+        public AuthController(APIContext dbContext, IUserRepository userRepository, IUserService userService, ILogger<AuthController> logger, IAuthService authService, IEmailService emailService, IMemoryCache cache)
         {
             _dbContext = dbContext;
             _userRepository = userRepository;
             _userService = userService;
             _logger = logger;
             _authService = authService;
+            _emailService = emailService;
+            _cache = cache;
         }
 
         [HttpGet("getUserRole/{token}")]
@@ -99,6 +105,54 @@ namespace OnlineAssessmentTool.Controllers
         {
             var loginResponse = await _authService.AuthenticateUser(loginRequest);
             return Ok(loginResponse);
+        }
+
+        [HttpPost("generate")]
+        public async Task<IActionResult> GenerateOtp([FromBody] OtpRequestDTO request)
+        {
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest("Email address is required.");
+            }
+
+            var otp = _authService.GenerateOtp();
+            _cache.Set(request.Email, otp, TimeSpan.FromMinutes(5));
+
+            var emailResponse = await _emailService.SendEmailAsync(request.Email, "OTP for Password Reset - Team Knowlix", $"Your OTP code is: {otp}");
+
+            if (emailResponse.Successful)
+            {
+                return Ok(new { message = "OTP sent successfully."});
+            }
+            else
+            {
+                return StatusCode(500, "Failed to send OTP.");
+            }
+        }
+
+        [HttpPost("verify")]
+        public IActionResult VerifyOtp([FromBody] OtpVerificationRequestDTO request)
+        {
+            if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
+            {
+                return BadRequest("Email and OTP are required.");
+            }
+
+            if (_cache.TryGetValue(request.Email, out string storedOtp))
+            {
+                if (storedOtp == request.Otp)
+                {
+                    return Ok(new { message = "OTP verified successfully." });
+                }
+                else
+                {
+                    return BadRequest("Invalid OTP.");
+                }
+            }
+            else
+            {
+                return BadRequest("OTP expired or not found.");
+            }
         }
 
         [HttpPut]

@@ -8,5 +8,6 @@ namespace OnlineAssessmentTool.Services.IService
         JwtSecurityToken ReadJwtToken(string token);
         public Task<ApiResponse> AuthenticateUser(LoginRequestDTO loginRequest);
         public string GenerateJwtToken(UserDetailsDTO user);
+        public string GenerateOtp();
     }
 }

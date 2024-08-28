@@ -76,6 +76,8 @@ namespace OnlineAssessmentTool.ServiceRegistry
 
             services.AddHostedService<AssessmentStatusUpdater>();
             services.AddHostedService<PasswordExpiryChecker>();
+
+            services.AddMemoryCache();
         }
     }
 }       

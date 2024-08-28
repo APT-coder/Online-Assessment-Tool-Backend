@@ -97,6 +97,36 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(scoreDistribution);
         }
 
+        [HttpGet("{assessmentId}")]
+        public async Task<IActionResult> GetAssessment(int assessmentId)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving assessment with ID {Id}.", assessmentId);
+                var response = new ApiResponse();
+
+                var assessment = await _assessmentScoreRepository.GetAssessmentByIdAsync(assessmentId);
+                if (assessment == null)
+                {
+                    _logger.LogWarning("Assessment with ID {Id} not found.", assessmentId);
+                    response.IsSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.IsSuccess = true;
+                response.Result = assessment;
+                response.StatusCode = HttpStatusCode.OK;
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving assessment with ID {Id}.", assessmentId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving assessment." } });
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostAssessmentScore([FromBody] AssessmentScoreDTO assessmentScoreDTO)
         {
@@ -120,31 +150,6 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogError(ex, "Error creating assessment score.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error creating assessment score." } });
-            }
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> DeleteAssessmentScore(int id)
-        {
-            try
-            {
-                _logger.LogInformation("Deleting assessment score with ID {Id}.", id);
-                var assessmentScore = await _assessmentScoreRepository.GetByIdAsync(id);
-                if (assessmentScore == null)
-                {
-                    _logger.LogWarning("Assessment score with ID {Id} not found.", id);
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Score not found." } });
-                }
-
-                await _assessmentScoreRepository.DeleteAsync(assessmentScore);
-
-                _logger.LogInformation("Assessment score with ID {Id} deleted successfully.", id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting assessment score with ID {Id}.", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting score." } });
             }
         }
 
@@ -178,35 +183,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        [HttpGet("{assessmentId}")]
-        public async Task<IActionResult> GetAssessment(int assessmentId)
-        {
-            try
-            {
-                _logger.LogInformation("Retrieving assessment with ID {Id}.", assessmentId);
-                var response = new ApiResponse();
-
-                var assessment = await _assessmentScoreRepository.GetAssessmentByIdAsync(assessmentId);
-                if (assessment == null)
-                {
-                    _logger.LogWarning("Assessment with ID {Id} not found.", assessmentId);
-                    response.IsSuccess = false;
-                    response.StatusCode = HttpStatusCode.NotFound;
-                    return NotFound(response);
-                }
-
-                response.IsSuccess = true;
-                response.Result = assessment;
-                response.StatusCode = HttpStatusCode.OK;
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving assessment with ID {Id}.", assessmentId);
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving assessment." } });
-            }
-        }
+        
 
         [HttpPut("update-assessment-scores")]
         public async Task<ActionResult<ApiResponse>> UpdateAssessmentScores([FromBody] UpdateAssessmentScoreDTO updateAssessmentScoreDTO)
@@ -223,6 +200,31 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogError(ex, "Error updating assessment scores.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error updating assessment scores." } });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse>> DeleteAssessmentScore(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Deleting assessment score with ID {Id}.", id);
+                var assessmentScore = await _assessmentScoreRepository.GetByIdAsync(id);
+                if (assessmentScore == null)
+                {
+                    _logger.LogWarning("Assessment score with ID {Id} not found.", id);
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Score not found." } });
+                }
+
+                await _assessmentScoreRepository.DeleteAsync(assessmentScore);
+
+                _logger.LogInformation("Assessment score with ID {Id} deleted successfully.", id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting assessment score with ID {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting score." } });
             }
         }
     }
