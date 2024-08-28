@@ -279,28 +279,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> DeleteScheduledAssessment(int id)
-        {
-            try
-            {
-                var scheduledAssessment = await _scheduledAssessmentRepository.GetByIdAsync(id);
-                if (scheduledAssessment == null)
-                {
-                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Assessment not found." } });
-                }
-
-                await _scheduledAssessmentRepository.DeleteAsync(scheduledAssessment);
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting assessment." } });
-            }
-        }
-
-
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> PutScheduledAssessment(int id, ScheduledAssessmentDTO scheduledAssessmentDTO)
         {
@@ -385,6 +363,27 @@ namespace OnlineAssessmentTool.Controllers
                     StatusCode = HttpStatusCode.InternalServerError,
                     Message = new List<string> { "Error updating status of scheduled assessment." }
                 });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse>> DeleteScheduledAssessment(int id)
+        {
+            try
+            {
+                var scheduledAssessment = await _scheduledAssessmentRepository.GetByIdAsync(id);
+                if (scheduledAssessment == null)
+                {
+                    return NotFound(new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.NotFound, Message = new List<string> { "Assessment not found." } });
+                }
+
+                await _scheduledAssessmentRepository.DeleteAsync(scheduledAssessment);
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error deleting assessment." } });
             }
         }
     }

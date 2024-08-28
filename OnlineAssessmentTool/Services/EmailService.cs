@@ -14,7 +14,7 @@ namespace OnlineAssessmentTool.Services
             _fluentEmail = fluentEmail;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body, List<AttachmentDTO> attachments = null)
+        public async Task<SendResponse> SendEmailAsync(string toEmail, string subject, string body, List<AttachmentDTO> attachments = null)
         {
             var email = _fluentEmail
                 .To(toEmail)
@@ -38,7 +38,7 @@ namespace OnlineAssessmentTool.Services
                 }
             }
 
-            await email.SendAsync();
+            return await email.SendAsync();
         }
     }
 }

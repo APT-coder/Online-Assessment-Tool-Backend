@@ -160,39 +160,6 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> DeleteTraineeAnswer(int id)
-        {
-            try
-            {
-                var traineeAnswer = await _traineeAnswerRepository.GetByIdAsync(id);
-                if (traineeAnswer == null)
-                {
-                    _logger.LogWarning("Trainee answer with ID {id} not found.", id);
-                    return NotFound(new ApiResponse
-                    {
-                        IsSuccess = false,
-                        StatusCode = HttpStatusCode.NotFound,
-                        Message = new List<string> { "Answer not found." }
-                    });
-                }
-
-                await _traineeAnswerRepository.DeleteAsync(traineeAnswer);
-                _logger.LogInformation("Trainee answer with ID {id} deleted successfully.", id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while deleting trainee answer with ID {id}.", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
-                {
-                    IsSuccess = false,
-                    StatusCode = HttpStatusCode.InternalServerError,
-                    Message = new List<string> { "Error deleting answer." }
-                });
-            }
-        }
-
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> PutTraineeAnswer(int id, TraineeAnswerDTO traineeAnswerDTO)
         {
@@ -273,6 +240,39 @@ namespace OnlineAssessmentTool.Controllers
                     IsSuccess = false,
                     StatusCode = HttpStatusCode.InternalServerError,
                     Message = new List<string> { "An error occurred while trying to update the score." }
+                });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse>> DeleteTraineeAnswer(int id)
+        {
+            try
+            {
+                var traineeAnswer = await _traineeAnswerRepository.GetByIdAsync(id);
+                if (traineeAnswer == null)
+                {
+                    _logger.LogWarning("Trainee answer with ID {id} not found.", id);
+                    return NotFound(new ApiResponse
+                    {
+                        IsSuccess = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        Message = new List<string> { "Answer not found." }
+                    });
+                }
+
+                await _traineeAnswerRepository.DeleteAsync(traineeAnswer);
+                _logger.LogInformation("Trainee answer with ID {id} deleted successfully.", id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while deleting trainee answer with ID {id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    IsSuccess = false,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Message = new List<string> { "Error deleting answer." }
                 });
             }
         }

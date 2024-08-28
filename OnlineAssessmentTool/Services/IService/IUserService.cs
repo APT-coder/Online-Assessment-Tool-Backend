@@ -20,5 +20,9 @@ namespace OnlineAssessmentTool.Services.IService
            TrainerDTO trainerDto = null,
            TraineeDTO traineeDto = null,
            List<int> batchIds = null);
+        public Task<bool> ValidateUserAsync(string email, string password);
+        public bool ValidatePassword(string hashedPassword, string providedPassword);
+        public Task<bool> IsUserActive(string email);
+        public Task<ApiResponse> UpdateTrainerPasswordAsync(UpdateTrainerPasswordDTO updateTrainerPasswordDTO);
     }
 }

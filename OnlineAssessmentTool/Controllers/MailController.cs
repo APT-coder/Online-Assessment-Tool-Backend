@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Services.IService;
 using OnlineAssessmentTool.Models.DTO;
+using static System.Net.WebRequestMethods;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -18,8 +19,15 @@ namespace OnlineAssessmentTool.Controllers
         [HttpPost("SendMail")]
         public async Task<IActionResult> SendMail([FromBody] EmailRequestDTO emailRequest)
         {
-            await _emailService.SendEmailAsync(emailRequest.ToEmail, emailRequest.Subject, emailRequest.Body, emailRequest.Attachments);
-            return Ok("Email sent successfully!");
+            var emailResponse = await _emailService.SendEmailAsync(emailRequest.ToEmail, emailRequest.Subject, emailRequest.Body, emailRequest.Attachments);
+            if (emailResponse.Successful)
+            {
+                return Ok(new { message = "Email sent successfully" });
+            }
+            else
+            {
+                return StatusCode(500, "Failed to send Email.");
+            }
         }
     }
 }

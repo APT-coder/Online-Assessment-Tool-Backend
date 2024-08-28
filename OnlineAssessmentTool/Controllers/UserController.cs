@@ -42,6 +42,52 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [HttpGet("details/{email}")]
+        public async Task<IActionResult> GetUserDetails(string email)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user details for email: {email}", email);
+                var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
+
+                if (userDetails == null)
+                {
+                    _logger.LogWarning("No user details found for email: {email}", email);
+                    return NotFound();
+                }
+
+                return Ok(userDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching user details for email: {email}", email);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
+            }
+        }
+
+        [HttpGet("details/{username}")]
+        public async Task<IActionResult> GetUserEmailByUserName(string username)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user details for username: {username}", username);
+                var userDetails = await _userService.GetUserEmailByUsernameAsync(username);
+
+                if (userDetails == null)
+                {
+                    _logger.LogWarning("No user details found for username: {username}", username);
+                    return NotFound();
+                }
+
+                return Ok(userDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching user details for email: {username}", username);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
+            }
+        }
+
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
         {
@@ -67,23 +113,6 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogError(ex, "An error occurred while creating user.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while creating user." });
-            }
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            try
-            {
-                _logger.LogInformation("Attempting to delete user with ID: {id}", id);
-                await _userService.DeleteUserAsync(id);
-                _logger.LogInformation("User with ID {id} deleted successfully.", id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while deleting user with ID: {id}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while deleting user." });
             }
         }
 
@@ -129,49 +158,20 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        [HttpGet("details/{email}")]
-        public async Task<IActionResult> GetUserDetails(string email)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
         {
             try
             {
-                _logger.LogInformation("Fetching user details for email: {email}", email);
-                var userDetails = await _userService.GetUserDetailsByEmailAsync(email);
-
-                if (userDetails == null)
-                {
-                    _logger.LogWarning("No user details found for email: {email}", email);
-                    return NotFound();
-                }
-
-                return Ok(userDetails);
+                _logger.LogInformation("Attempting to delete user with ID: {id}", id);
+                await _userService.DeleteUserAsync(id);
+                _logger.LogInformation("User with ID {id} deleted successfully.", id);
+                return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while fetching user details for email: {email}", email);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
-            }
-        }
-
-        [HttpGet("details/{username}")]
-        public async Task<IActionResult> GetUserEmailByUserName(string username)
-        {
-            try
-            {
-                _logger.LogInformation("Fetching user details for username: {username}", username);
-                var userDetails = await _userService.GetUserEmailByUsernameAsync(username);
-
-                if (userDetails == null)
-                {
-                    _logger.LogWarning("No user details found for username: {username}", username);
-                    return NotFound();
-                }
-
-                return Ok(userDetails);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while fetching user details for email: {username}", username);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An error occurred while fetching user details." });
+                _logger.LogError(ex, "An error occurred while deleting user with ID: {id}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while deleting user." });
             }
         }
     }

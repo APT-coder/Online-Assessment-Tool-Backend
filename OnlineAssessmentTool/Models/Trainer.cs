@@ -20,6 +20,8 @@ namespace OnlineAssessmentTool.Models
         [ForeignKey("Role")]
         public int RoleId { get; set; }
         public Role Role { get; set; }
+        public bool? IsActive { get; set; }
+        public DateTime? LastPasswordReset { get; set; }
         public List<TrainerBatch> TrainerBatch { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace OnlineAssessmentToolNUnitTest
         private Mock<IUserRepository> _mockUserRepository;
         private Mock<IUserService> _mockUserService;
         private Mock<ILogger<AuthController>> _mockLogger;
-        private Mock<IJwtService> _mockJwtService;
+        private Mock<IAuthService> _mockJwtService;
         private AuthController _authController;
 
         [SetUp]
@@ -26,7 +26,7 @@ namespace OnlineAssessmentToolNUnitTest
             _mockUserRepository = new Mock<IUserRepository>();
             _mockUserService = new Mock<IUserService>();
             _mockLogger = new Mock<ILogger<AuthController>>();
-            _mockJwtService = new Mock<IJwtService>();
+            _mockJwtService = new Mock<IAuthService>();
 
             _authController = new AuthController(
                 null,
@@ -47,7 +47,7 @@ namespace OnlineAssessmentToolNUnitTest
                 .Throws(new SecurityTokenMalformedException("JWT is not well formed"));
 
             // Act
-            var result = await _authController.GetUserRoleAsync(invalidToken) as BadRequestObjectResult;
+            var result = await _authController.AzureSSOLogin(invalidToken) as BadRequestObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
@@ -62,7 +62,7 @@ namespace OnlineAssessmentToolNUnitTest
             string nullToken = null;
 
             // Act
-            var result = await _authController.GetUserRoleAsync(nullToken) as NotFoundObjectResult;
+            var result = await _authController.AzureSSOLogin(nullToken) as NotFoundObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
@@ -83,7 +83,7 @@ namespace OnlineAssessmentToolNUnitTest
             _mockJwtService.Setup(s => s.ReadJwtToken(It.IsAny<string>())).Returns(new JwtSecurityToken(claims: claims));
 
             // Act
-            var result = await _authController.GetUserRoleAsync(token) as NotFoundObjectResult;
+            var result = await _authController.AzureSSOLogin(token) as NotFoundObjectResult;
 
             // Assert
             Assert.IsNotNull(result);
@@ -126,7 +126,7 @@ namespace OnlineAssessmentToolNUnitTest
             _mockUserService.Setup(s => s.GetUserDetailsByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
 
             // Act
-            var result = await _authController.GetUserRoleAsync(token) as OkObjectResult;
+            var result = await _authController.AzureSSOLogin(token) as OkObjectResult;
 
             // Assert
             Assert.IsNotNull(result);

@@ -61,7 +61,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddScoped<IAssessmentPostService, AssessmentPostService>();
             services.AddScoped<IIlpRepository, IlpIntegrationRepository>();
             services.AddScoped<ILPIntegrationService>();
-            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddTransient<IEmailService, EmailService>();
 
             services.AddAutoMapper(typeof(MappingConfig));
@@ -75,6 +75,9 @@ namespace OnlineAssessmentTool.ServiceRegistry
             });
 
             services.AddHostedService<AssessmentStatusUpdater>();
+            services.AddHostedService<PasswordExpiryChecker>();
+
+            services.AddMemoryCache();
         }
     }
 }       
