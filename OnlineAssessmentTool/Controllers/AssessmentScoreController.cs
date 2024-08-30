@@ -5,6 +5,7 @@ using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
 using OnlineAssessmentTool.Services.IService;
 using Microsoft.Extensions.Logging; // Add this for logging
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -203,6 +204,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeleteAssessmentScore(int id)
         {

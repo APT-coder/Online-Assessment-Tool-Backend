@@ -8,6 +8,7 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace OnlineAssessmentToolNUnitTest
 {
@@ -18,6 +19,8 @@ namespace OnlineAssessmentToolNUnitTest
         private Mock<IUserService> _mockUserService;
         private Mock<ILogger<AuthController>> _mockLogger;
         private Mock<IAuthService> _mockJwtService;
+        private Mock<IEmailService> _mockEmailService;
+        private Mock<IMemoryCache> _mockMemoryCache;
         private AuthController _authController;
 
         [SetUp]
@@ -27,13 +30,17 @@ namespace OnlineAssessmentToolNUnitTest
             _mockUserService = new Mock<IUserService>();
             _mockLogger = new Mock<ILogger<AuthController>>();
             _mockJwtService = new Mock<IAuthService>();
+            _mockEmailService = new Mock<IEmailService>();
+            _mockMemoryCache = new Mock<IMemoryCache>();
 
             _authController = new AuthController(
                 null,
                 _mockUserRepository.Object,
                 _mockUserService.Object,
                 _mockLogger.Object,
-                _mockJwtService.Object
+                _mockJwtService.Object,
+                _mockEmailService.Object,
+                _mockMemoryCache.Object
             );
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
@@ -8,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Xml.Linq;
 
 namespace OnlineAssessmentTool.Services
 {
@@ -29,6 +31,62 @@ namespace OnlineAssessmentTool.Services
             return handler.ReadJwtToken(token);
         }
 
+        public async Task<ApiResponse> AuthenticateSSOUser(string token)
+        {
+            var response = new ApiResponse();
+            Dictionary<string, dynamic> results = new Dictionary<string, dynamic>();
+
+            var tokenS = ReadJwtToken(token);
+            var claims = tokenS.Claims;
+            var upn = claims.FirstOrDefault(c => c.Type == "upn")?.Value;
+            var appName = claims.FirstOrDefault(c => c.Type == "app_displayname")?.Value;
+
+            if (upn == null || appName == null)
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.NotFound;
+                response.Message = ["UPN or App Display Name not found in token"];
+                return response;
+            }
+            var user = await _service.GetUserDetailsByEmailAsync(upn);
+            if (user == null) 
+            {
+                response.IsSuccess = false;
+                response.StatusCode = HttpStatusCode.Unauthorized;
+                response.Message = ["User not found"];
+                return response;
+            }
+            else
+            {
+                var tokenNew = GenerateJwtToken(user);
+                results.Add("appName", appName);
+                results.Add("Token", tokenNew);
+                results.Add("UserId", user.UserId);
+                results.Add("UserName", user.Username);
+                results.Add("UserEmail", user.Email);
+                results.Add("UserPhone", user.Phone);
+                results.Add("UserAdmin", user.IsAdmin);
+                results.Add("UserType", user.UserType);
+                if (user.UserType == UserType.Trainer)
+                {
+                    results.Add("TrainerId", user.Trainer.TrainerId);
+                    results.Add("UserBatch", user.Trainer.TrainerBatch);
+                    results.Add("UserRole", user.Trainer.Role);
+                    results.Add("UserPermissions", user.Trainer.Role.Permissions);
+                }
+                else if (user.UserType == UserType.Trainee)
+                {
+                    results.Add("TraineeId", user.Trainee.TraineeId);
+                    results.Add("UserBatch", user.Trainee.Batch);
+                }
+
+                response.Result = results;
+                response.StatusCode = HttpStatusCode.OK;
+                response.IsSuccess = true;
+                return response;
+            }
+        }
+        
         public async Task<ApiResponse> AuthenticateUser(LoginRequestDTO loginRequest)
         {
             var result = new LoginResponseDTO();
@@ -64,10 +122,26 @@ namespace OnlineAssessmentTool.Services
         public string GenerateJwtToken(UserDetailsDTO user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            string roleObject = string.Empty;
+
+            if (user.IsAdmin)
+            {
+                roleObject = "Admin";
+            }
+            else if (user.UserType == UserType.Trainer)
+            {
+                roleObject = "Trainer";
+            }
+            else
+            {
+                roleObject = "Trainee";
+            }
+
             var claims = new[]
             {
                 new Claim("upn", user.Email.ToString()),
-                new Claim("app_displayname", "Knowlix")
+                new Claim("app_displayname", "Knowlix"),
+                new Claim(ClaimTypes.Role, roleObject)
             };
 
             var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWTSecretKey")));

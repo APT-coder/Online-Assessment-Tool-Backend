@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
@@ -366,6 +367,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeleteScheduledAssessment(int id)
         {
