@@ -4,6 +4,7 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -86,6 +87,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> PostRole(CreateRoleDTO createRoleDTO)
         {
@@ -171,6 +173,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse>> PutRole(int id, CreateRoleDTO createRoleDTO)
         {
@@ -210,6 +213,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> DeleteRole(int id)
         {

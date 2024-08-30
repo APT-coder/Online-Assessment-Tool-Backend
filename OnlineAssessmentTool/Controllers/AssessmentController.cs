@@ -4,6 +4,7 @@ using AutoMapper;
 using System.Net;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -26,7 +27,6 @@ namespace OnlineAssessmentTool.Controllers
             _questionRepository = questionRepository;
             _logger = logger;
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAllAssessments()
@@ -266,6 +266,7 @@ namespace OnlineAssessmentTool.Controllers
 
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{assessmentId}")]
         public async Task<IActionResult> DeleteAssessment(int assessmentId)
         {
@@ -287,6 +288,7 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("questions/{questionId}")]
         public async Task<IActionResult> DeleteQuestion(int questionId)
         {

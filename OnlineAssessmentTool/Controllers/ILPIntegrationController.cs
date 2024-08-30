@@ -25,6 +25,7 @@ namespace OnlineAssessmentTool.Controllers
             }
             return Ok(new { AverageScore = result.AverageScore, TotalScore = result.TotalScore });
         }
+
         [HttpGet("{batchname}")]
         public async Task<IActionResult> GetScheduledAssessmentDetails( string batchname)
         {

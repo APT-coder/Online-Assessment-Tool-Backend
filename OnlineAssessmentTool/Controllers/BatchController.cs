@@ -6,6 +6,7 @@ using OnlineAssessmentTool.Models.DTO;
 using System.Net;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -57,6 +58,7 @@ namespace OnlineAssessmentTool.Controllers
             return Ok(response);
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateBatch([FromBody] CreateBatchDTO createbatchDTO)
         {
@@ -96,6 +98,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBatch(int id, [FromBody] UpdateBatchDTO batchDTO)
         {
@@ -160,6 +163,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteBatch(int id)
         {

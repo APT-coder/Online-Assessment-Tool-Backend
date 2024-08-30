@@ -9,6 +9,7 @@ using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Services;
 using FluentEmail.Core;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.Identity.Data;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -38,7 +39,6 @@ namespace OnlineAssessmentTool.Controllers
         [HttpGet("getUserRole/{token}")]
         public async Task<IActionResult> AzureSSOLogin(string token)
         {
-            Dictionary<string, dynamic> results = new Dictionary<string, dynamic>();
             if (string.IsNullOrEmpty(token))
             {
                 return NotFound("Token not found");
@@ -46,47 +46,8 @@ namespace OnlineAssessmentTool.Controllers
 
             try
             {
-                var tokenS = _authService.ReadJwtToken(token);
-                var claims = tokenS.Claims;
-                var upn = claims.FirstOrDefault(c => c.Type == "upn")?.Value;
-                var appName = claims.FirstOrDefault(c => c.Type == "app_displayname")?.Value;
-
-                if (upn == null || appName == null)
-                {
-                    return NotFound("UPN or App Display Name not found in token");
-                }
-
-                _logger.LogInformation("Fetching user details using email");
-                var user = await _userService.GetUserDetailsByEmailAsync(upn);
-                if (user != null)
-                {
-                    results.Add("appName", appName);
-                    results.Add("UserId", user.UserId);
-                    results.Add("UserName", user.Username);
-                    results.Add("UserEmail", user.Email);
-                    results.Add("UserPhone", user.Phone);
-                    results.Add("UserAdmin", user.IsAdmin);
-                    results.Add("UserType", user.UserType);
-                    if (user.UserType == UserType.Trainer)
-                    {
-                        results.Add("TrainerId", user.Trainer.TrainerId);
-                        results.Add("UserBatch", user.Trainer.TrainerBatch);
-                        results.Add("UserRole", user.Trainer.Role);
-                        results.Add("UserPermissions", user.Trainer.Role.Permissions);
-                    }
-                    else if (user.UserType == UserType.Trainee)
-                    {
-                        results.Add("TraineeId", user.Trainee.TraineeId);
-                        results.Add("UserBatch", user.Trainee.Batch);
-                    }
-
-                    return Ok(results);
-                }
-                else
-                {
-                    _logger.LogWarning("User is not found");
-                    return NotFound($"{upn} is not found in Employees database.");
-                }
+                var loginResponse = await _authService.AuthenticateSSOUser(token);
+                return Ok(loginResponse);
             }
             catch (SecurityTokenMalformedException)
             {

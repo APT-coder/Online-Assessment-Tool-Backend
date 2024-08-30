@@ -4,7 +4,8 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Repository.IRepository;
 using AutoMapper;
 using OnlineAssessmentTool.Services.IService;
-using Microsoft.Extensions.Logging; 
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -88,6 +89,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost("CreateUser")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDTO request)
         {
@@ -116,6 +118,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("update")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequestDTO updateUserRequestDto)
         {
@@ -158,6 +161,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
