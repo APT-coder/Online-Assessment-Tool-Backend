@@ -1,14 +1,13 @@
 ﻿using OnlineAssessmentTool.Data;
-using OnlineAssessmentTool.Models;
 
-namespace OnlineAssessmentTool.Services
+namespace OnlineAssessmentTool.Services.BackgroundServices
 {
-    public class PasswordExpiryChecker : BackgroundService
+    public class AssessmentStatusUpdater : BackgroundService
     {
-        private readonly ILogger<PasswordExpiryChecker> _logger;
+        private readonly ILogger<AssessmentStatusUpdater> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public PasswordExpiryChecker(ILogger<PasswordExpiryChecker> logger, IServiceScopeFactory serviceScopeFactory)
+        public AssessmentStatusUpdater(ILogger<AssessmentStatusUpdater> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
@@ -18,7 +17,7 @@ namespace OnlineAssessmentTool.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Checking for expired passwords...");
+                _logger.LogInformation("Checking for overdue assessments...");
 
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
@@ -29,14 +28,14 @@ namespace OnlineAssessmentTool.Services
 
                     try
                     {
-                        var passwordsToUpdate = context.Trainers
-                        .Where(a => a.LastPasswordReset >= now.AddDays(30))
+                        var assessmentsToUpdate = context.ScheduledAssessments
+                        .Where(a => a.EndTime <= now && a.Status == 0)
                         .ToList();
 
-                        foreach (var user in passwordsToUpdate)
+                        foreach (var assessment in assessmentsToUpdate)
                         {
-                            user.IsActive = false;
-                            context.Trainers.Update(user);
+                            assessment.Status = (Models.AssessmentStatus)3;
+                            context.ScheduledAssessments.Update(assessment);
                         }
 
                         await context.SaveChangesAsync();

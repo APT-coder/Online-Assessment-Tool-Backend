@@ -6,6 +6,7 @@ using System.Net;
 using OnlineAssessmentTool.Services.IService;
 using Microsoft.Extensions.Logging; // Add this for logging
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -125,6 +126,35 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogError(ex, "Error retrieving assessment with ID {Id}.", assessmentId);
                 return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving assessment." } });
+            }
+        }
+
+        [HttpGet("batch/{batchName}")]
+        public async Task<ActionResult> GetTraineesWithAverageScore(string batchName)
+        {
+            try
+            {
+                _logger.LogInformation("Retrieving trainees with batchname {batchname}.", batchName);
+                var response = new ApiResponse();
+
+                var result = await _assessmentScoreRepository.GetTraineesWithAverageScore(batchName);
+                if (result == null)
+                {
+                    _logger.LogWarning("Batch with name {batchname} not found.", batchName);
+                    response.IsSuccess = false;
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    return NotFound(response);
+                }
+
+                response.IsSuccess = true;
+                response.Result = result;
+                response.StatusCode = HttpStatusCode.OK;
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving trainees with Batch Name {batchname}.", batchName);
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving trainee scores." }, Result = ex});
             }
         }
 

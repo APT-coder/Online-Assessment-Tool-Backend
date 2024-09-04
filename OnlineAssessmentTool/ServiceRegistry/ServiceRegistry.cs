@@ -15,6 +15,7 @@ using Npgsql;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using OnlineAssessmentTool.Services.BackgroundServices;
 
 namespace OnlineAssessmentTool.ServiceRegistry
 {
@@ -27,6 +28,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
                 {
                     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                    options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
                 });
 
             services.AddCors(options =>
@@ -141,6 +143,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
 
             services.AddHostedService<AssessmentStatusUpdater>();
             services.AddHostedService<PasswordExpiryChecker>();
+            services.AddHostedService<BatchActiveService>();
 
             services.AddMemoryCache();
         }

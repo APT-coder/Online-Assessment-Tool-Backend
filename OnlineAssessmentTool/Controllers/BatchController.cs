@@ -76,6 +76,7 @@ namespace OnlineAssessmentTool.Controllers
             {
                 _logger.LogInformation("Creating new batch");
                 var batch = _mapper.Map<Batch>(createbatchDTO);
+                batch.CreatedOn = DateTime.UtcNow;
                 await _repository.AddAsync(batch);
                 var response = new ApiResponse
                 {

@@ -1,4 +1,5 @@
-﻿using OnlineAssessmentTool.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 
 namespace OnlineAssessmentTool.Repository.IRepository
@@ -10,5 +11,7 @@ namespace OnlineAssessmentTool.Repository.IRepository
         Task<AssessmentScore> GetByScheduledAssessmentAndTraineeAsync(int scheduledAssessmentId, int traineeId);
         Task UpdateAssessmentScoresAsync(List<AssessmentScoreDTO> assessmentScoreDTOs);
         Task<IEnumerable<object>> GetScoreDistributionAsync(int assessmentId);
+        public Task<ActionResult<IEnumerable<TraineeAverageScoreDto>>> GetTraineesWithAverageScore(string batchName);
+
     }
 }

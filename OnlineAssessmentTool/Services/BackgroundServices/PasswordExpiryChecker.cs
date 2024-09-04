@@ -1,13 +1,14 @@
 ﻿using OnlineAssessmentTool.Data;
+using OnlineAssessmentTool.Models;
 
-namespace OnlineAssessmentTool.Services
+namespace OnlineAssessmentTool.Services.BackgroundServices
 {
-    public class AssessmentStatusUpdater : BackgroundService
+    public class PasswordExpiryChecker : BackgroundService
     {
-        private readonly ILogger<AssessmentStatusUpdater> _logger;
+        private readonly ILogger<PasswordExpiryChecker> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public AssessmentStatusUpdater(ILogger<AssessmentStatusUpdater> logger, IServiceScopeFactory serviceScopeFactory)
+        public PasswordExpiryChecker(ILogger<PasswordExpiryChecker> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
@@ -17,7 +18,7 @@ namespace OnlineAssessmentTool.Services
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Checking for overdue assessments...");
+                _logger.LogInformation("Checking for expired passwords...");
 
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
@@ -28,14 +29,14 @@ namespace OnlineAssessmentTool.Services
 
                     try
                     {
-                        var assessmentsToUpdate = context.ScheduledAssessments
-                        .Where(a => a.EndTime <= now && a.Status == 0)
+                        var passwordsToUpdate = context.Trainers
+                        .Where(a => a.LastPasswordReset >= now.AddDays(30))
                         .ToList();
 
-                        foreach (var assessment in assessmentsToUpdate)
+                        foreach (var user in passwordsToUpdate)
                         {
-                            assessment.Status = (Models.AssessmentStatus)3;
-                            context.ScheduledAssessments.Update(assessment);
+                            user.IsActive = false;
+                            context.Trainers.Update(user);
                         }
 
                         await context.SaveChangesAsync();

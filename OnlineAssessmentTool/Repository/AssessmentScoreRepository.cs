@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
+using System.Text.RegularExpressions;
 
 namespace OnlineAssessmentTool.Repository
 {
@@ -129,6 +132,90 @@ namespace OnlineAssessmentTool.Repository
                 .ToListAsync();
 
             return scoreDistribution;
+        }
+
+        public async Task<ActionResult<IEnumerable<TraineeAverageScoreDto>>> GetTraineesWithAverageScore(string batchName)
+        {
+            var batch = await _context.batch
+                .Include(b => b.Trainees)
+                .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync(b => b.batchname == batchName);
+
+            if (batch == null)
+            {
+                return null;
+            }
+
+            var scheduledAssessments = await _context.ScheduledAssessments
+                .Where(sa => sa.BatchId == batch.batchid)
+                .Include(sa => sa.Assessment)
+                .ToListAsync();
+
+            var totalAssessmentsScheduled = scheduledAssessments.Count;
+
+            var batchScores = await _context.ScheduledAssessments
+                .Where(sa => sa.BatchId == batch.batchid)
+                .SelectMany(sa => _context.AssessmentScores
+                    .Where(ass => ass.ScheduledAssessmentId == sa.ScheduledAssessmentId)
+                    .Select(ass => new
+                    {
+                        Score = (double)ass.AvergeScore,
+                        TotalScore = (double)sa.Assessment.TotalScore
+                    }))
+                .ToListAsync();
+
+            var totalScoreObtained = batchScores.Sum(scoreData => scoreData.Score);
+            var totalMaxScore = batchScores.Sum(scoreData => scoreData.TotalScore);
+
+            var batchAverageScore = totalScoreObtained / totalMaxScore;
+            var batchAverageScorePercentage = batchAverageScore * 100;
+
+            var traineeAverageScores = batch.Trainees
+                .Select(t =>
+                {
+                    var traineeScores = _context.AssessmentScores
+                        .Where(ass => ass.TraineeId == t.TraineeId && scheduledAssessments.Select(sa => sa.ScheduledAssessmentId).Contains(ass.ScheduledAssessmentId))
+                        .ToList();
+
+                    var totalScore = traineeScores.Sum(ass => ass.AvergeScore);
+                    var totalAssessmentsCompleted = traineeScores.Count;
+                    var averagePercentageScore = _context.AssessmentScores
+                        .Where(ass => ass.TraineeId == t.TraineeId)
+                        .Average(ass =>
+                            (double)ass.AvergeScore / _context.Assessments
+                            .Where(a => a.AssessmentId == ass.ScheduledAssessment.AssessmentId)
+                            .Select(a => a.TotalScore)
+                            .FirstOrDefault() * 100) ?? 0.0;
+
+                    var lastAssessmentDate = traineeScores
+                        .OrderByDescending(ass => ass.CalculatedOn)
+                        .FirstOrDefault()?.CalculatedOn;
+
+                    return new TraineeAverageScoreDto
+                    {
+                        TraineeId = t.TraineeId,
+                        TraineeName = t.User.Username,
+                        BatchName = batchName,
+                        AveragePercentageScore = averagePercentageScore,
+                        TotalAssessmentsCompleted = totalAssessmentsCompleted,
+                        TotalScore = totalScore,
+                        LastAssessmentDate = lastAssessmentDate ?? DateTime.MinValue,
+                        RankInBatch = 0,
+                        BatchAverageScore = batchAverageScorePercentage,
+                    };
+                })
+                .ToList();
+
+            traineeAverageScores = traineeAverageScores
+                .OrderByDescending(tas => tas.AveragePercentageScore)
+                .Select((tas, index) =>
+                {
+                    tas.RankInBatch = index + 1;
+                    return tas;
+                })
+                .ToList();
+
+            return (traineeAverageScores);
         }
     }
 }
