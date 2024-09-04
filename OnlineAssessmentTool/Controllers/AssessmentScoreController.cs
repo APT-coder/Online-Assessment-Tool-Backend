@@ -147,7 +147,7 @@ namespace OnlineAssessmentTool.Controllers
                 }
 
                 response.IsSuccess = true;
-                response.Result = result;
+                response.Result = result.Value;
                 response.StatusCode = HttpStatusCode.OK;
                 return Ok(response);
             }
