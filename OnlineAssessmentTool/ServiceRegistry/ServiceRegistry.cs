@@ -77,7 +77,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
 
             });
 
-            var key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWTSecretKey"));
+            var key = "HelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorld";
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,7 +104,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
                 options.AddPolicy("TraineePolicy", policy => policy.RequireRole("Trainee"));
             });
 
-            var connectionString = Environment.GetEnvironmentVariable("POSTGRESQL_CONNECTION_STRING");
+            var connectionString = "User Id=postgres.qasikddpduvbagpmuthq;Password=Aefmrs@rev01;Server=aws-0-ap-southeast-1.pooler.supabase.com;Port=5432;Database=postgres;";
 
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<IPermissionsRepository, PermissionsRepository>();

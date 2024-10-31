@@ -17,7 +17,16 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
+var smtpSettings = new SmtpSettings
+{
+    Host = "smtp.gmail.com",
+    Port = 587,
+    UserName = "aswinpt.apt.2001@gmail.com",
+    Password = "anaftkkmcrexkhdo",
+    FromEmail = "aswinpt.apt.2001@gmail.com",
+    FromName = "Knowlix"
+};
+
 /*Log.Logger = new LoggerConfiguration()
 .WriteTo.File("logs\\myapp.log", rollingInterval: RollingInterval.Day)
 .CreateLogger();*/
