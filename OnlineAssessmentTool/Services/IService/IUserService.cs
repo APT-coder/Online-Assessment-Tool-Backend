@@ -23,6 +23,6 @@ namespace OnlineAssessmentTool.Services.IService
         public Task<bool> ValidateUserAsync(string email, string password);
         public bool ValidatePassword(string hashedPassword, string providedPassword);
         public Task<bool> IsUserActive(string email);
-        public Task<ApiResponse> UpdateTrainerPasswordAsync(UpdateTrainerPasswordDTO updateTrainerPasswordDTO);
+        public Task<ApiResponse> UpdateUserPasswordAsync(UpdateUserPasswordDTO updateUserPasswordDTO);
     }
 }

@@ -1,5 +1,4 @@
 ﻿using OnlineAssessmentTool.Data;
-using OnlineAssessmentTool.Models;
 
 namespace OnlineAssessmentTool.Services.BackgroundServices
 {
@@ -29,14 +28,24 @@ namespace OnlineAssessmentTool.Services.BackgroundServices
 
                     try
                     {
-                        var passwordsToUpdate = context.Trainers
+                        var trainerPasswordsToUpdate = context.Trainers
                         .Where(a => a.LastPasswordReset >= now.AddDays(30))
                         .ToList();
 
-                        foreach (var user in passwordsToUpdate)
+                        var traineePasswordsToUpdate = context.Trainees
+                        .Where(a => a.LastPasswordReset >= now.AddDays(30))
+                        .ToList();
+
+                        foreach (var user in trainerPasswordsToUpdate)
                         {
                             user.IsActive = false;
                             context.Trainers.Update(user);
+                        }
+
+                        foreach (var user in traineePasswordsToUpdate)
+                        {
+                            user.IsActive = false;
+                            context.Trainees.Update(user);
                         }
 
                         await context.SaveChangesAsync();
