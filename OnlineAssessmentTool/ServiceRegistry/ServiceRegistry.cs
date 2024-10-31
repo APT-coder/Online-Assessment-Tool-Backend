@@ -1,21 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Npgsql;
 using OnlineAssessmentTool.Data;
 using OnlineAssessmentTool.Repository;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services;
-using OnlineAssessmentTool.Services.IService;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text.Encodings;
-using OnlineAssessmentTool.Models.DTO;
-using System;
-using System.Net.Mail;
-using System.Text.Json.Serialization;
-using Npgsql;
-using System.Text;
-using Microsoft.OpenApi.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using OnlineAssessmentTool.Services.BackgroundServices;
+using OnlineAssessmentTool.Services.IService;
+using System.Text;
+using System.Text.Json.Serialization;
 
 namespace OnlineAssessmentTool.ServiceRegistry
 {
@@ -35,7 +30,7 @@ namespace OnlineAssessmentTool.ServiceRegistry
             {
                 options.AddPolicy("AllowLocalhost",
                     builder => builder
-                        .WithOrigins("http://localhost:4201", "http://localhost:4200")
+                        .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod());
             });
@@ -45,7 +40,8 @@ namespace OnlineAssessmentTool.ServiceRegistry
 
             services.AddEndpointsApiExplorer();
 
-            services.AddSwaggerGen(option => {
+            services.AddSwaggerGen(option =>
+            {
                 option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description =
@@ -149,4 +145,4 @@ namespace OnlineAssessmentTool.ServiceRegistry
             services.AddMemoryCache();
         }
     }
-}       
+}

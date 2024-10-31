@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Models;
-using OnlineAssessmentTool.Repository.IRepository;
-using AutoMapper;
-using OnlineAssessmentTool.Services.IService;
-using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -15,11 +13,11 @@ namespace OnlineAssessmentTool.Controllers
     {
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
-        private readonly ILogger<UserController> _logger; 
-        public UserController(IUserService userService, ILogger<UserController> logger) 
+        private readonly ILogger<UserController> _logger;
+        public UserController(IUserService userService, ILogger<UserController> logger)
         {
             _userService = userService;
-            _logger = logger; 
+            _logger = logger;
         }
 
         [HttpGet("byRole/{roleName}")]

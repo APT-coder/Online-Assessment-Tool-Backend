@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
-using OnlineAssessmentTool.Services;
 using OnlineAssessmentTool.Services.IService;
 using System.Globalization;
 using System.Net;
@@ -91,12 +90,12 @@ namespace OnlineAssessmentTool.Controllers
         {
             try
             {
-                _logger.LogInformation("Fetching the number of students who attended assessment by assessmentid {assessmentId}",assessmentId);
+                _logger.LogInformation("Fetching the number of students who attended assessment by assessmentid {assessmentId}", assessmentId);
                 int studentCount = await _scheduledAssessmentRepository.GetStudentCountByAssessmentIdAsync(assessmentId);
 
                 if (studentCount == 0)
                 {
-                    _logger.LogWarning("No students for assessment by id {assessmentId}",assessmentId);
+                    _logger.LogWarning("No students for assessment by id {assessmentId}", assessmentId);
                     return NotFound(new ApiResponse
                     {
                         IsSuccess = false,

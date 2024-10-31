@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Models.DTO;
-using AutoMapper;
-using System.Net;
-using OnlineAssessmentTool.Repository.IRepository;
-using OnlineAssessmentTool.Models;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository.IRepository;
+using System.Net;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -45,7 +44,7 @@ namespace OnlineAssessmentTool.Controllers
         public async Task<IActionResult> GetAssessment(int assessmentId)
         {
             var response = new ApiResponse();
-            _logger.LogInformation("Retrieving assessment with Id {assessmentId}.",assessmentId);
+            _logger.LogInformation("Retrieving assessment with Id {assessmentId}.", assessmentId);
             var assessment = await _assessmentService.GetAssessmentByIdAsync(assessmentId);
             if (assessment == null)
             {
@@ -67,7 +66,7 @@ namespace OnlineAssessmentTool.Controllers
 
             if (question == null)
             {
-                _logger.LogWarning("Question Options with ID {Id} not found.", questionId );
+                _logger.LogWarning("Question Options with ID {Id} not found.", questionId);
                 return NotFound(new ApiResponse
                 {
                     IsSuccess = false,
@@ -124,7 +123,7 @@ namespace OnlineAssessmentTool.Controllers
         [HttpGet("highperformers/{assessmentId}")]
         public async Task<IActionResult> GetHighPerformers(int assessmentId)
         {
-            _logger.LogInformation("Fetching high performers in an assessment with id {assessmentId}",assessmentId);
+            _logger.LogInformation("Fetching high performers in an assessment with id {assessmentId}", assessmentId);
             var result = await _assessmentRepository.GetHighPerformersByAssessmentIdAsync(assessmentId);
             Console.WriteLine(result);
             return Ok(result);
@@ -179,7 +178,7 @@ namespace OnlineAssessmentTool.Controllers
         {
             var response = new ApiResponse();
             var question = await _questionService.AddQuestionToAssessmentAsync(assessmentId, questionDTO);
-            _logger.LogInformation("Questions added to Assessment with id {assessmentId} successfully",assessmentId);
+            _logger.LogInformation("Questions added to Assessment with id {assessmentId} successfully", assessmentId);
             if (question == null)
             {
                 _logger.LogWarning("Assessment with id {assessmentId} not found", assessmentId);
@@ -202,7 +201,7 @@ namespace OnlineAssessmentTool.Controllers
             var existingAssessment = await _assessmentRepository.GetAssessmentByIdAsync(assessmentId);
             if (existingAssessment == null)
             {
-                _logger.LogWarning("Assessment with id {assessmentId} not found",assessmentId);
+                _logger.LogWarning("Assessment with id {assessmentId} not found", assessmentId);
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.NotFound;
                 return NotFound(response);
@@ -211,7 +210,7 @@ namespace OnlineAssessmentTool.Controllers
             existingAssessment.CreatedBy = assessmentDTO.CreatedBy;
             existingAssessment.TotalScore = assessmentDTO.TotalScore;
             _assessmentRepository?.UpdateAsync(existingAssessment);
-            _logger.LogInformation("Assessment with id {assessmentId} updated successfully",assessmentId);
+            _logger.LogInformation("Assessment with id {assessmentId} updated successfully", assessmentId);
             response.IsSuccess = true;
             response.Result = existingAssessment;
             response.StatusCode = HttpStatusCode.OK;
@@ -284,7 +283,7 @@ namespace OnlineAssessmentTool.Controllers
             response.IsSuccess = true;
             response.StatusCode = HttpStatusCode.OK;
             response.Message.Add("Assessment deleted successfully.");
-            _logger.LogInformation("Assessment with id {assessmentId} deleted successfully",assessmentId);
+            _logger.LogInformation("Assessment with id {assessmentId} deleted successfully", assessmentId);
             return Ok(response);
         }
 

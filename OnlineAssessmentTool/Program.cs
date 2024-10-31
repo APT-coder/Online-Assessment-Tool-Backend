@@ -1,11 +1,9 @@
+using FluentValidation;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.ServiceRegistry;
+using OnlineAssessmentTool.Validations;
 using Serilog;
 using Serilog.Events;
-using FluentValidation.AspNetCore;
-using OnlineAssessmentTool.Models;
-using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Validations;
-using FluentValidation;
 using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);

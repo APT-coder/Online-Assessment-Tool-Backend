@@ -144,7 +144,7 @@ namespace OnlineAssessmentTool.Services
                 new Claim(ClaimTypes.Role, roleObject)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWTSecretKey")));
+            var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("HelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorldHelloWorld"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor

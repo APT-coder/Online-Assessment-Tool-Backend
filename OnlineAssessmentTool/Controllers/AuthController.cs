@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using OnlineAssessmentTool.Data;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
-using OnlineAssessmentTool.Models;
-using Microsoft.IdentityModel.Tokens;
-using OnlineAssessmentTool.Models.DTO;
-using OnlineAssessmentTool.Services;
-using FluentEmail.Core;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.AspNetCore.Identity.Data;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -83,7 +78,7 @@ namespace OnlineAssessmentTool.Controllers
 
             if (emailResponse.Successful)
             {
-                return Ok(new { message = "OTP sent successfully."});
+                return Ok(new { message = "OTP sent successfully." });
             }
             else
             {

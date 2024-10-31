@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
-using Microsoft.Extensions.Logging; // Add this using directive
 
 namespace OnlineAssessmentTool.Controllers
 {

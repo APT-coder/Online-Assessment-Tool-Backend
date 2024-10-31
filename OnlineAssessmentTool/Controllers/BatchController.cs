@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineAssessmentTool.Models;
-using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Models.DTO;
+using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
-using AutoMapper;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {

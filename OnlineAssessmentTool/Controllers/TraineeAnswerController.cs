@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
-using System.Net;
 using OnlineAssessmentTool.Services.IService;
+using System.Net;
 using static OnlineAssessmentTool.Models.DTO.CheckTraineeAnswerExitsDTO;
-using Microsoft.Extensions.Logging; // Add this using directive
 
 
 namespace OnlineAssessmentTool.Controllers

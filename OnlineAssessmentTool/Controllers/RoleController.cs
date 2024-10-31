@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using System.Net;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 
 namespace OnlineAssessmentTool.Controllers
 {

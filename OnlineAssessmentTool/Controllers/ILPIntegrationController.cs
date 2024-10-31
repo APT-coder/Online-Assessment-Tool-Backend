@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Services;
-using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -27,7 +26,7 @@ namespace OnlineAssessmentTool.Controllers
         }
 
         [HttpGet("{batchname}")]
-        public async Task<IActionResult> GetScheduledAssessmentDetails( string batchname)
+        public async Task<IActionResult> GetScheduledAssessmentDetails(string batchname)
         {
             var result = await _ilpIntegrationService.GetScheduledAssessmentDetails(batchname);
             if (result == null)

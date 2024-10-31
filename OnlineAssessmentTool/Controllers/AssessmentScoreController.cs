@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Models.DTO;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OnlineAssessmentTool.Models;
+using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
-using System.Net;
 using OnlineAssessmentTool.Services.IService;
-using Microsoft.Extensions.Logging; // Add this for logging
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace OnlineAssessmentTool.Controllers
 {
@@ -154,7 +152,7 @@ namespace OnlineAssessmentTool.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving trainees with Batch Name {batchname}.", batchName);
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving trainee scores." }, Result = ex});
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse { IsSuccess = false, StatusCode = HttpStatusCode.InternalServerError, Message = new List<string> { "Error retrieving trainee scores." }, Result = ex });
             }
         }
 
@@ -214,7 +212,7 @@ namespace OnlineAssessmentTool.Controllers
             }
         }
 
-        
+
 
         [HttpPut("update-assessment-scores")]
         public async Task<ActionResult<ApiResponse>> UpdateAssessmentScores([FromBody] UpdateAssessmentScoreDTO updateAssessmentScoreDTO)

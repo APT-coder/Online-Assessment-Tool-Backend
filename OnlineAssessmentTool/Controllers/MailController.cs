@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OnlineAssessmentTool.Services.IService;
 using OnlineAssessmentTool.Models.DTO;
-using static System.Net.WebRequestMethods;
+using OnlineAssessmentTool.Services.IService;
 
 namespace OnlineAssessmentTool.Controllers
 {
