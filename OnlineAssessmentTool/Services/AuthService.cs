@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
@@ -9,7 +7,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
-using System.Xml.Linq;
 
 namespace OnlineAssessmentTool.Services
 {
@@ -49,7 +46,7 @@ namespace OnlineAssessmentTool.Services
                 return response;
             }
             var user = await _service.GetUserDetailsByEmailAsync(upn);
-            if (user == null) 
+            if (user == null)
             {
                 response.IsSuccess = false;
                 response.StatusCode = HttpStatusCode.Unauthorized;
@@ -86,7 +83,7 @@ namespace OnlineAssessmentTool.Services
                 return response;
             }
         }
-        
+
         public async Task<ApiResponse> AuthenticateUser(LoginRequestDTO loginRequest)
         {
             var result = new LoginResponseDTO();
@@ -98,7 +95,7 @@ namespace OnlineAssessmentTool.Services
                 response.StatusCode = HttpStatusCode.Unauthorized;
                 return response;
             }
-            else if(!await _service.IsUserActive(loginRequest.Email))
+            else if (!await _service.IsUserActive(loginRequest.Email))
             {
                 response.IsSuccess = false;
                 response.Result = loginRequest.Email;

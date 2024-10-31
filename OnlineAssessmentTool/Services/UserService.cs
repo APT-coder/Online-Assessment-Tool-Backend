@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using OnlineAssessmentTool.Data;
@@ -8,7 +7,6 @@ using OnlineAssessmentTool.Models;
 using OnlineAssessmentTool.Models.DTO;
 using OnlineAssessmentTool.Repository.IRepository;
 using OnlineAssessmentTool.Services.IService;
-using System.Security.Cryptography;
 
 public class UserService : IUserService
 {
@@ -75,6 +73,10 @@ public class UserService : IUserService
                 {
                     var trainee = _mapper.Map<Trainee>(traineeDto);
                     trainee.UserId = user.UserId;
+                    trainee.Password = _passwordHasher.HashPassword(null, traineeDto.Password);
+                    trainee.IsActive = false;
+                    trainee.LastPasswordReset = DateTime.UtcNow;
+
                     await _traineeRepository.AddAsync(trainee);
                     await _traineeRepository.SaveAsync();
                 }
@@ -261,6 +263,7 @@ public class UserService : IUserService
                     if (trainee != null)
                     {
                         trainee.JoinedOn = traineeDto.JoinedOn;
+                        trainee.Password = traineeDto.Password;
                         trainee.BatchId = traineeDto.BatchId;
 
                         await _traineeRepository.UpdateAsync(trainee);
@@ -288,7 +291,9 @@ public class UserService : IUserService
             {
                 return false;
             }
-            bool isValid = ValidatePassword(user.Trainer.Password, password);
+
+            var userPassword = user.UserType == UserType.Trainee ? user.Trainee.Password : user.Trainer.Password;
+            bool isValid = ValidatePassword(userPassword, password);
             return isValid;
         }
         catch (Exception ex)
@@ -302,7 +307,11 @@ public class UserService : IUserService
         try
         {
             var user = await GetUserDetailsByEmailAsync(email);
-            if (user.Trainer.IsActive == false)
+            if (user.UserType == UserType.Trainee && user.Trainee.IsActive == false)
+            {
+                return false;
+            }
+            else if (user.UserType == UserType.Trainer && user.Trainer.IsActive == false)
             {
                 return false;
             }
@@ -320,14 +329,14 @@ public class UserService : IUserService
         return result == PasswordVerificationResult.Success;
     }
 
-    public async Task<ApiResponse> UpdateTrainerPasswordAsync(UpdateTrainerPasswordDTO updateTrainerPasswordDTO)
+    public async Task<ApiResponse> UpdateUserPasswordAsync(UpdateUserPasswordDTO updateUserPasswordDTO)
     {
         var apiResponse = new ApiResponse();
         using (var transaction = await _userRepository.BeginTransactionAsync())
         {
             try
             {
-                var user = await GetUserDetailsByEmailAsync(updateTrainerPasswordDTO.Email);
+                var user = await GetUserDetailsByEmailAsync(updateUserPasswordDTO.Email);
                 if (user == null)
                 {
                     apiResponse.IsSuccess = false;
@@ -336,12 +345,12 @@ public class UserService : IUserService
                     return apiResponse;
                 }
 
-                else if (user.UserType == UserType.Trainer && updateTrainerPasswordDTO != null)
+                else if (user.UserType == UserType.Trainer && updateUserPasswordDTO != null)
                 {
                     var trainer = await _trainerRepository.GetByUserIdAsync(user.UserId);
                     if (trainer != null)
                     {
-                        trainer.Password = _passwordHasher.HashPassword(null, updateTrainerPasswordDTO.Password);
+                        trainer.Password = _passwordHasher.HashPassword(null, updateUserPasswordDTO.Password);
                         if (trainer.IsActive == false)
                         {
                             trainer.IsActive = true;
@@ -350,6 +359,23 @@ public class UserService : IUserService
 
                         await _trainerRepository.UpdateAsync(trainer);
                         await _trainerRepository.SaveAsync();
+                    }
+                }
+
+                else if (user.UserType == UserType.Trainee && updateUserPasswordDTO != null)
+                {
+                    var trainee = await _traineeRepository.GetByUserIdAsync(user.UserId);
+                    if (trainee != null)
+                    {
+                        trainee.Password = _passwordHasher.HashPassword(null, updateUserPasswordDTO.Password);
+                        if (trainee.IsActive == false)
+                        {
+                            trainee.IsActive = true;
+                        }
+                        trainee.LastPasswordReset = DateTime.UtcNow;
+
+                        await _traineeRepository.UpdateAsync(trainee);
+                        await _traineeRepository.SaveAsync();
                     }
                 }
 

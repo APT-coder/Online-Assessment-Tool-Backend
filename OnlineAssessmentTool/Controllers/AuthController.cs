@@ -57,7 +57,7 @@ namespace OnlineAssessmentTool.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ExternalTrainerLogin([FromBody] LoginRequestDTO loginRequest)
+        public async Task<IActionResult> ExternalUserLogin([FromBody] LoginRequestDTO loginRequest)
         {
             var loginResponse = await _authService.AuthenticateUser(loginRequest);
             return Ok(loginResponse);
@@ -112,9 +112,9 @@ namespace OnlineAssessmentTool.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> TrainerResetPassword([FromBody] UpdateTrainerPasswordDTO updateTrainerPasswordDTO)
+        public async Task<IActionResult> UserResetPassword([FromBody] UpdateUserPasswordDTO updateUserPasswordDTO)
         {
-            var resetPasswordResponse = await _userService.UpdateTrainerPasswordAsync(updateTrainerPasswordDTO);
+            var resetPasswordResponse = await _userService.UpdateUserPasswordAsync(updateUserPasswordDTO);
             return Ok(resetPasswordResponse);
         }
     }
