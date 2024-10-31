@@ -10,6 +10,13 @@ using System.Net.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
+DotNetEnv.Env.Load();
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 var smtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
 /*Log.Logger = new LoggerConfiguration()
 .WriteTo.File("logs\\myapp.log", rollingInterval: RollingInterval.Day)
