@@ -57,7 +57,7 @@ namespace OnlineAssessmentTool.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Exception: {ex.Message}");
-                return StatusCode(500, "An error occurred while processing the request");
+                return StatusCode(500, ex.Message);
             }
         }
 
